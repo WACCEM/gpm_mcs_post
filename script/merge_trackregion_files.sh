@@ -1,0 +1,29 @@
+#!/bin/bash
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20040301_20041031.nc robust_mcs_tracks_20040301_20041031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20050301_20051031.nc robust_mcs_tracks_20050301_20051031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20060301_20061031.nc robust_mcs_tracks_20060301_20061031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20070301_20071031.nc robust_mcs_tracks_20070301_20071031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20080301_20081031.nc robust_mcs_tracks_20080301_20081031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20090301_20091031.nc robust_mcs_tracks_20090301_20091031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20100301_20101031.nc robust_mcs_tracks_20100301_20101031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20110301_20111031.nc robust_mcs_tracks_20110301_20111031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20120301_20121031.nc robust_mcs_tracks_20120301_20121031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20130301_20131031.nc robust_mcs_tracks_20130301_20131031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20140301_20141031.nc robust_mcs_tracks_20140301_20141031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20150301_20151031.nc robust_mcs_tracks_20150301_20151031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20160301_20161031.nc robust_mcs_tracks_20160301_20161031.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20040101_20040331.nc robust_mcs_tracks_20040101_20040331.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20041101_20050228.nc robust_mcs_tracks_20041101_20050228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20051101_20060228.nc robust_mcs_tracks_20051101_20060228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20061101_20070228.nc robust_mcs_tracks_20061101_20070228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20071101_20080229.nc robust_mcs_tracks_20071101_20080229.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20081101_20090228.nc robust_mcs_tracks_20081101_20090228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20091101_20100228.nc robust_mcs_tracks_20091101_20100228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20101101_20110228.nc robust_mcs_tracks_20101101_20110228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20111101_20120229.nc robust_mcs_tracks_20111101_20120229.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20121101_20130228.nc robust_mcs_tracks_20121101_20130228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20131101_20140228.nc robust_mcs_tracks_20131101_20140228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20141101_20150228.nc robust_mcs_tracks_20141101_20150228.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20151101_20160229.nc robust_mcs_tracks_20151101_20160229.nc
+ncks -A -v track_region,track_region_fraction mcs_tracks_region_20161001_20161231.nc robust_mcs_tracks_20161001_20161231.nc
+
