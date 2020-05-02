@@ -36,6 +36,8 @@
 *  Move original pixel-level MCS track files to mcstracking_orig directory to preserve them (important, otherwise they will be overwritten in the next step)
 
 *  Rerun labeling pixel-level MCS tracks step using the filtered robust MCS statistics files (robust_mcs_tracks_extc_yyyymmdd_yyyymmdd.nc)
-	○ IDL script to run multiple years for a region (should be run in interactive node): (FLEXTRKR directory)
+	
+    IDL script to run multiple years for a region (should be run in interactive node): (FLEXTRKR directory)
 	*loop_run_gpm_irpf_mcs.pro*
-	○ Or just submit a job to run the labeling pixel-level MCS step
+	
+    Or just submit a job to run the labeling pixel-level MCS step
