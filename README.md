@@ -12,8 +12,10 @@
 **Procedures to find MCSs in TC:**
 
 *  Find MCS tracks within TC (uses Dask parallelization) :
-	○ Python code: *find_mcs_tracks_in_tc.py*
-	○ Shell script to run multiple years and regions (sometimes doesn't work when running multiple year/regions, Dask complains memory issue):
+	
+    Python code: *find_mcs_tracks_in_tc.py*
+	
+    Shell script to run multiple years and regions (sometimes doesn't work when running multiple year/regions, Dask complains memory issue):
 	*loop_find_mcs_tracks_tc.sh*
 
 **Procedures to filter AR and TC**
@@ -21,12 +23,14 @@
 
 *  Filter MCSs identified in AR and TC together (for regions that has AR: NAM, EUROPE):
 	*filter_mcs_tracks_ar_tc.py*
-	○ Shell script to run multiple years serially
+	
+    Shell script to run multiple years serially
 	*loop_filter_mcs_tracks_ar_tc.sh*
 
 *  Filter MCSs identified in TC (for regions with TC only):
 	*filter_mcs_tracks_tc.py*
-	○ Shell script to run multiple years serially
+	
+    Shell script to run multiple years serially
 	*loop_filter_mcs_tracks_tc.sh*
 
 *  Move original pixel-level MCS track files to mcstracking_orig directory to preserve them (important, otherwise they will be overwritten in the next step)
