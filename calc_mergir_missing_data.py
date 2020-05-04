@@ -12,14 +12,10 @@ import time, datetime, calendar, pytz
 year = sys.argv[1]
 month = (sys.argv[2]).zfill(2)
 
-#datadir = f'/global/cscratch1/sd/feng045/waccem/MERGIR_Global/{year}/'
-#datadir = f'/global/cscratch1/sd/wang406/Tracking_global/MERGIR/{year}/'
-#datafiles = sorted(glob.glob(f'{datadir}*merg_{year}{month}????_4km-pixel.nc4'))
-datadir = f'/global/cscratch1/sd/wang406/Tracking_global/MERGIR/Regrid/{year}/'
+datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/{year}/'
 datafiles = sorted(glob.glob(f'{datadir}*merg_{year}{month}????_4km-pixel.nc'))
 print(f'Number of files: {len(datafiles)}')
 
-#outdir = '/global/cscratch1/sd/feng045/waccem/MERGIR_Global/stats/'
 outdir = '/global/cscratch1/sd/feng045/waccem/MERGIR_Global/Regrid/stats/'
 map_outfile = f'{outdir}merg_monthly_validcount_{year}{month}.nc'
 
