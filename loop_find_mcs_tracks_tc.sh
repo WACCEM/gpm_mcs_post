@@ -5,8 +5,9 @@
 
 conda activate /global/homes/f/feng045/envs/p37
 
- declare -a REGIONS=("nam" "asia" "spac")
-STARTYEAR=2016
+# declare -a REGIONS=("nam" "asia" "spac")
+declare -a REGIONS=("asia")
+STARTYEAR=2014
 ENDYEAR=2019
 
 # Loop over each region

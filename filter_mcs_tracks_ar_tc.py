@@ -14,7 +14,7 @@ date = sys.argv[2]
 # region = 'npac'
 # date = '20150101_20151231'
 
-datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
+datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
 # Original robust MCS stats file
 statsfile = f'{datadir}robust_mcs_tracks_{date}.nc'
 
