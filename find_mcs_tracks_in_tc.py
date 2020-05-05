@@ -96,12 +96,17 @@ if __name__ == '__main__':
     pixeldir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
     tcdir = '/global/cscratch1/sd/feng045/waccem/IBTrACS/'
 
+    # outdir = statsdir
+    outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+    outfile = f'{outdir}mcs_tc_{indates}.nc'
+    os.makedirs(outdir, exist_ok=True)
+
+    begin_time = datetime.datetime.now()
+
+    # Find all pixel-level files
     pixelfiles = sorted(glob.glob(f'{pixeldir}mcstrack_{inyear}????_????.nc'))
     tcfile = f'{tcdir}ibtracs.nc'
     print(f'Number of pixel files: {len(pixelfiles)}')
-
-    outdir = statsdir
-    outfile = f'{outdir}mcs_tc_{indates}.nc'
 
     # Get the region lat/lon boundary
     ds = xr.open_dataset(pixelfiles[0])
@@ -162,3 +167,6 @@ if __name__ == '__main__':
 
     # Write output to file
     write_netcdf(outfile, mcs_tracknumber, mcs_nhours)
+
+    # Print processing time
+    print(datetime.datetime.now() - begin_time)

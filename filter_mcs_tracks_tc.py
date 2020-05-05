@@ -13,17 +13,9 @@ date = sys.argv[2]
 # region = 'npac'
 # date = '20150101_20151231'
 
-# datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/'
-datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_pt1/'
-
-# For region: npac, europe, use the exar (exclude AR) stats file
-if (region == 'npac') | (region == 'europe'):
-    statsfile = f'{datadir}robust_mcs_tracks_exar_{date}.nc'
-    print(f'Statsfile: {statsfile}')
-else:
-    # For other regions, use the original robust MCS file
-    statsfile = f'{datadir}robust_mcs_tracks_{date}.nc'
-    print(f'Statsfile: {statsfile}')
+datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+statsfile = f'{datadir}robust_mcs_tracks_{date}.nc'
+print(f'Statsfile: {statsfile}')
 
 # MCS tracknumbers in TC file
 tcfile = f'{datadir}mcs_tc_{date}.nc'
@@ -54,6 +46,8 @@ dsout = ds.sel(tracks=nonar_trackid)
 nmcs = len(nonar_trackid)
 tracks = np.arange(0, nmcs, 1)
 dsout['tracks'] = tracks
+
+# import pdb; pdb.set_trace()
 
 # Write to netCDF file
 dsout.to_netcdf(path=outfile, mode='w', format='NETCDF4_CLASSIC', unlimited_dims='tracks')

@@ -83,45 +83,48 @@ if __name__ == '__main__':
     # Number of workers for Dask
     n_workers = 10
 
+    begin_time = datetime.datetime.now()
+
     statsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
     pixeldir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
     ardir = '/global/cscratch1/sd/feng045/waccem/AR_Tempest_hourly/'
 
+    outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+    # outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
+    outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
+
+    # Find all pixel-level files
     pixelfiles = sorted(glob.glob(f'{pixeldir}mcstrack_{inyear}????_????.nc'))
     #arfile = f'{ardir}MERRA2.ar_tag.Tempest_v1.3hourly.{inyear}.nc'
     arfile = f'{ardir}tag_MERRA2_hourlyIVT_{inyear}.nc'
     print(f'Number of pixel files: {len(pixelfiles)}')
 
-    # Define a region to remove AR for Europe. The region is the same with Rutz et al. (2019) JGR Fig. 4.
-    lon_box = [-15,10]
+    # Define a region to remove AR for western Europe and North America. The Europe region is the same with Rutz et al. (2019) JGR Fig. 4.
+    lon_box_eu = [-15,10]
+    lon_box_nam = [-140,-115]
     lat_box = [35,62]
-    landmaskfile = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/map-data/IMERG_landmask_{region}.nc'
-
-    outdir = statsdir
-    # outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
-    outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
+    landmaskfile = f'/global/cscratch1/sd/feng045/waccem/mcs_region/map-data/IMERG_landmask_{region}.nc'
 
     # Get landmask
     dslm = xr.open_dataset(landmaskfile)
     lonlm = dslm.lon
     latlm = dslm.lat
-    # landmask = (dslm.landseamask < 90).data
-    # Define coast mask
+    # Define coast mask (land fraction between 20%-90%)
     coastmask = (dslm.landseamask < 90) & (dslm.landseamask > 20)
 
     # Defines shape of growth. This grows one pixel as a cross
     dilationstructure = generate_binary_structure(2,1)
-    # Dilate coast mask
+    # Dilate coast mask to include surrounding area of the coastline
     coastmaskdilate = binary_dilation(coastmask.data, structure=dilationstructure, iterations=5).astype(coastmask.dtype)
 
     # Make a copy of the dilated coast mask
-    coastmask_weur = np.copy(coastmaskdilate)
+    coastmask_west = np.copy(coastmaskdilate)
 
     # Retain only region over western Europe coastal region
-    x_idx = (lonlm < lon_box[0]) | (lonlm > lon_box[1])
+    x_idx = ((lonlm < lon_box_nam[0]) | ((lonlm > lon_box_nam[1]) & (lonlm < lon_box_eu[0])) | (lonlm > lon_box_eu[1]))
     y_idx = (latlm < lat_box[0]) | (latlm > lat_box[1])
-    coastmask_weur[y_idx,:] = 0
-    coastmask_weur[:,x_idx] = 0
+    coastmask_west[y_idx,:] = 0
+    coastmask_west[:,x_idx] = 0
 
     # Get the region lat/lon boundary
     ds = xr.open_dataset(pixelfiles[0])
@@ -170,20 +173,19 @@ if __name__ == '__main__':
         ar_mask = dsar.ar_binary_tag.sel(time=itime, method='nearest').data
 
         # Call function to find MCS tracknumber within ARs
-        tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_weur)
-        # tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_weur)
+        # tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_west)
+        tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_west)
         
         # Extend the tracknumber list
-        # saved_tracknumber.extend(tracknumber)
         saved_tracknumber.append(tracknumber)
 
     # Collect results from Dask
-    #results = dask.compute(*saved_tracknumber)
+    results = dask.compute(*saved_tracknumber)
     # print("Done processing {} files.".format(len(results))
 
     # Flatten the append list
-    tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
-    # tracknumber_list = [item for sublist in results for item in sublist]
+    # tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
+    tracknumber_list = [item for sublist in results for item in sublist]
 
     # Get unique track numbers, counts. Counts mean number of hours each MCS overlap with AR
     mcs_tracknumber, mcs_nhours = np.unique(tracknumber_list, return_counts=True)
@@ -194,5 +196,7 @@ if __name__ == '__main__':
     # Write output to file
     write_netcdf(outfile, mcs_tracknumber, mcs_nhours)
 
+    # Print processing time
+    print(datetime.datetime.now() - begin_time)
 
 

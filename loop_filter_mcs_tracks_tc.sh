@@ -4,7 +4,7 @@
 
 conda activate /global/homes/f/feng045/envs/py37
 
-declare -a REGIONS=("asia" "spac")
+declare -a REGIONS=("spac")
 STARTYEAR=2014
 ENDYEAR=2019
 

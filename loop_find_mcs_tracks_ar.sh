@@ -3,20 +3,21 @@
 # This script runs the Python code find_mcs_tracks_in_ar.py for a number of years
 # The Python code has Dask parallel built-in and should be run in an interactive node
 
-conda activate /global/homes/f/feng045/envs/py37
+conda activate /global/homes/f/feng045/envs/p37
 
-START=2014
+START=2018
 END=2019
 
 # Loop over each year
 for iyear in $(seq $START $END); do
   echo ${iyear}0101_${iyear}1231
   # North Pacific (west coast of US)
-  python find_mcs_tracks_in_ar.py npac ${iyear}0101_${iyear}1231
+#  python find_mcs_tracks_in_ar.py npac ${iyear}0101_${iyear}1231
 
   # Europe
 #  python find_mcs_tracks_in_ar_coast.py europe ${iyear}0101_${iyear}1231
 
   # EU-NAM
 #  python find_mcs_tracks_in_ar_coast.py eunam ${iyear}0101_${iyear}1231
+  python find_mcs_tracks_in_ar_coast.py nam ${iyear}0101_${iyear}1231
 done
