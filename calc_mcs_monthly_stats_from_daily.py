@@ -17,14 +17,14 @@ region = sys.argv[3]
 # year = '2014'
 # month = '01'
 
-datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/daily/'
+datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
 datafiles = sorted(glob.glob(f'{datadir}mcs_statsmap_{year}{month}*nc'))
 nfiles = len(datafiles)
 
 print(year, month)
 print(f'Number of files: {nfiles}')
 
-outdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
+outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 outfile = f'{outdir}mcs_statsmap_{year}{month}.nc'
 os.makedirs(outdir, exist_ok=True)
 

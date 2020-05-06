@@ -58,3 +58,15 @@ run_mcs_monthly_precip.sh 20180101 20181231 2018 09 nam
 run_mcs_monthly_precip.sh 20180101 20181231 2018 10 nam
 run_mcs_monthly_precip.sh 20180101 20181231 2018 11 nam
 run_mcs_monthly_precip.sh 20180101 20181231 2018 12 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 01 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 02 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 03 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 04 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 05 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 06 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 07 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 08 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 09 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 10 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 11 nam
+run_mcs_monthly_precip.sh 20190101 20191231 2019 12 nam
