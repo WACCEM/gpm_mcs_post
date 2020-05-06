@@ -50,8 +50,8 @@ region = sys.argv[5]
 #year = 2018
 #month = 10
 
-stats_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
-pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
+stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
+pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
 
 yearstr = str(year)
 monthstr = str(month).zfill(2)
@@ -65,7 +65,7 @@ stats.load()
 pixel_files = sorted(glob.glob(f'{pixel_path}{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_dir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
+output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}.nc'
 os.makedirs(output_dir, exist_ok=True)
 
@@ -183,7 +183,7 @@ nframes = 0
 
 # Loop over each MCS track
 for imcs in range(nmcs):
-# for imcs in range(0, 2):
+
     itrack = tracks.values[imcs] + 1
     ilifetime = lifetime.values[imcs]
 #     idxconvinit = lifecycle_index.values[imcs,0]

@@ -17,14 +17,14 @@ region=$1
 START=2014
 END=2019
 #runscript="run_map_mcs_stats.sh"
-#runscript="run_mcs_monthly_precip.sh"
+runscript="run_mcs_monthly_precip.sh"
 #runscript="run_mcs_monthly_rainhov.sh"
-runscript="run_map_mcs_monthly_stats.sh"
+#runscript="run_map_mcs_monthly_stats.sh"
 #runscript="run_calc_mcs_monthly_stats.sh"
 
-#listname="processlist_mcs_monthly_rain_"${region}
+listname="processlist_mcs_monthly_rain_"${region}
 #listname="processlist_mcs_monthly_rainhov_"${region}
-listname="processlist_map_mcs_stats_"${region}
+#listname="processlist_map_mcs_stats_"${region}
 #listname="processlist_calc_mcs_monthly_stats_"${region}
 
 # Create an empty file, will overwrite if exists
