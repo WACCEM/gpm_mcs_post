@@ -5,19 +5,12 @@
 
 conda activate /global/homes/f/feng045/envs/p37
 
-START=2018
+START=2014
 END=2019
 
 # Loop over each year
 for iyear in $(seq $START $END); do
   echo ${iyear}0101_${iyear}1231
-  # North Pacific (west coast of US)
-#  python find_mcs_tracks_in_ar.py npac ${iyear}0101_${iyear}1231
-
-  # Europe
-#  python find_mcs_tracks_in_ar_coast.py europe ${iyear}0101_${iyear}1231
-
   # EU-NAM
-#  python find_mcs_tracks_in_ar_coast.py eunam ${iyear}0101_${iyear}1231
   python find_mcs_tracks_in_ar_coast.py nam ${iyear}0101_${iyear}1231
 done

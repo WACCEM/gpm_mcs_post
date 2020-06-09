@@ -47,10 +47,12 @@ artc_trackid = np.unique(np.concatenate((ar_trackid.data,tc_trackid.data)))
 alltracks = ds.tracks
 
 # Find track indices that are not in AR&TC
-nonartc_trackid = alltracks[~np.isin(alltracks, artc_trackid)]
+# nonartc_trackid = alltracks[~np.isin(alltracks, artc_trackid)]
+nonartc_trackid = (alltracks[~np.isin(alltracks, artc_trackid)]).values
 
 # Select tracks not in AR
-dsout = ds.sel(tracks=nonartc_trackid)
+# dsout = ds.sel(tracks=nonartc_trackid)
+dsout = ds.isel(tracks=nonartc_trackid, drop=True)
 # Update tracks coordinate
 nmcs = len(nonartc_trackid)
 tracks = np.arange(0, nmcs, 1)
