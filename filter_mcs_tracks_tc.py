@@ -38,10 +38,11 @@ ar_nhours = dsar.mcs_nhours
 alltracks = ds.tracks
 
 # Find track indices that are not in AR
-nonar_trackid = alltracks[~np.isin(alltracks, ar_trackid)]
+nonar_trackid = (alltracks[~np.isin(alltracks, ar_trackid)]).values
 
 # Select tracks not in AR
-dsout = ds.sel(tracks=nonar_trackid)
+# dsout = ds.sel(tracks=nonar_trackid)
+dsout = ds.isel(tracks=nonar_trackid, drop=True)
 # Update tracks coordinate
 nmcs = len(nonar_trackid)
 tracks = np.arange(0, nmcs, 1)

@@ -38,8 +38,9 @@ print('Finish reading input files.')
 ntimes = ds.dims['time']
 
 
-# Sum MCS precipitation over time, use pcptracknumber > 0 as mask
-mcsprecip = ds[pcpvarname].where(ds.pcptracknumber > 0).sum(dim='time')
+# Sum MCS precipitation over time, use cloudtracknumber > 0 as mask
+mcsprecip = ds[pcpvarname].where(ds.cloudtracknumber > 0).sum(dim='time')
+#mcsprecip = ds[pcpvarname].where(ds.pcptracknumber > 0).sum(dim='time')
 
 # Sum total precipitation over time
 totprecip = ds[pcpvarname].sum(dim='time')

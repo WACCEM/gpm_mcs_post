@@ -11,18 +11,16 @@ import pandas as pd
 import time, datetime, calendar, pytz
 
 region = sys.argv[1]
-#region = 'maritime_continent'
+#region = 'asia'
 
-#mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
-mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
+mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
+#mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
 mcsfiles = sorted(glob.glob(f'{mcsdir}mcs_rainmap_20????*nc'))
 print(f'Number of files: {len(mcsfiles)}')
 
-#outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/climo/'
-outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_pt1/climo/'
+outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/climo/'
+#outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/climo/'
 os.makedirs(outdir, exist_ok=True)
-#outfile_season = f'{outdir}mcs_rainmap_seasonal_mean.nc'
-#outfile_month = f'{outdir}mcs_rainmap_monthly_mean.nc'
 
 # Read data
 ds = xr.open_mfdataset(mcsfiles, concat_dim='time', combine='nested')

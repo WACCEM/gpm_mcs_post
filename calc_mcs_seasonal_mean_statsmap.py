@@ -13,20 +13,16 @@ import time, datetime, calendar, pytz
 region = sys.argv[1]
 # region = 'china'
 
-datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
-#datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
-#datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/stats/monthly_satmcs/'
-#pcpdir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/stats/monthly/'
+#datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
+datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 pcpdir = datadir
 datafiles = sorted(glob.glob(f'{datadir}mcs_statsmap_20????*nc'))
 pcpfiles = sorted(glob.glob(f'{pcpdir}mcs_rainmap_20????*nc'))
 print(f'Number of files: {len(datafiles)}')
 
-outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_pt1/climo/'
-#outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/climo/'
+#outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/climo/'
+outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/climo/'
 os.makedirs(outdir, exist_ok=True)
-#outfile_season = f'{outdir}mcs_statsmap_seasonal_mean.nc'
-#outfile_month = f'{outdir}mcs_statsmap_monthly_mean.nc'
 
 # Read stats data
 ds = xr.open_mfdataset(datafiles, concat_dim='time', combine='nested')
@@ -34,7 +30,7 @@ nx = ds.dims['lon']
 ny = ds.dims['lat']
 lon = ds.lon
 lat = ds.lat
-#ds
+
 
 # Read precip data (for total number of hours in each month only)
 dsp = xr.open_mfdataset(pcpfiles, concat_dim='time', combine='nested')
