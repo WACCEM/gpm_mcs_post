@@ -1,5 +1,5 @@
 """
-This script finds MCS track numbers that overlap with Atmospheric Rivers that hit the west coast of Europe and save them to a netCDF file.
+This script finds MCS track numbers that overlap with Atmospheric Rivers that hit the west coast of U.S. and Europe and save them to a netCDF file.
 The code needs to be modified to include west coast of U.S. as a secondary region for the new domain "nam".
 """
 __author__ = "Zhe.Feng@pnnl.gov"
@@ -85,12 +85,11 @@ if __name__ == '__main__':
 
     begin_time = datetime.datetime.now()
 
-    statsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
-    pixeldir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
-    ardir = '/global/cscratch1/sd/feng045/waccem/AR_Tempest_hourly/'
+    statsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+    pixeldir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
+    ardir = os.path.expandvars('$SCRATCH') + '/waccem/AR_Tempest_hourly/'
 
     outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
-    # outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
     outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
 
     # Find all pixel-level files
@@ -103,7 +102,7 @@ if __name__ == '__main__':
     lon_box_eu = [-15,10]
     lon_box_nam = [-140,-115]
     lat_box = [35,62]
-    landmaskfile = f'/global/cscratch1/sd/feng045/waccem/mcs_region/map-data/IMERG_landmask_{region}.nc'
+    landmaskfile = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/map-data/IMERG_landmask_{region}.nc'
 
     # Get landmask
     dslm = xr.open_dataset(landmaskfile)

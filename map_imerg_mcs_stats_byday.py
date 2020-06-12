@@ -51,8 +51,10 @@ region = sys.argv[6]
 #year = 2018
 #month = 10
 
-stats_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
-pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
+stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
+pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
+# stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/robust/filtered/'
+# pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_pt1/'
 
 yearstr = str(year)
 monthstr = str(month).zfill(2)
@@ -66,7 +68,7 @@ stats = xr.open_dataset(stats_file)
 pixel_files = sorted(glob.glob(f'{pixel_path}{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_dir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
+output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
 output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}{daystr}.nc'
 os.makedirs(output_dir, exist_ok=True)
 

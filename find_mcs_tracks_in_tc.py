@@ -90,11 +90,11 @@ if __name__ == '__main__':
     inyear = indates[0:4]
 
     # Number of workers for Dask
-    n_workers = 10
+    n_workers = 20
 
-    statsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
-    pixeldir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
-    tcdir = '/global/cscratch1/sd/feng045/waccem/IBTrACS/'
+    statsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+    pixeldir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
+    tcdir = os.path.expandvars('$SCRATCH') + '/waccem/IBTrACS/'
 
     # outdir = statsdir
     outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
@@ -126,10 +126,11 @@ if __name__ == '__main__':
     # dstc = dstc.rename_dims({"fakeDim0":"storms","fakeDim1":"storms","fakeDim2":"storms","fakeDim3":"storms","fakeDim4":"storms","fakeDim5":"storms","fakeDim6":"storms"})
     dstc = dstc.rename({"fakeDim0":"storms","fakeDim1":"storms","fakeDim2":"storms","fakeDim3":"storms","fakeDim4":"storms","fakeDim5":"storms","fakeDim6":"storms"})
 
-    # Subset the TC dataset to keep those within the region
+    # Subset the TC dataset to keep those within the region and in the same year
     buffer_zone = 5  # [degree]
     dstc = dstc.where((dstc.lon >= (lonmin - buffer_zone)) & (dstc.lon <= (lonmax + buffer_zone)) & 
-                        (dstc.lat >= (latmin - buffer_zone)) & (dstc.lat <= (latmax + buffer_zone)), drop=True)
+                        (dstc.lat >= (latmin - buffer_zone)) & (dstc.lat <= (latmax + buffer_zone)) &
+                        (dstc.year == int(inyear)), drop=True)
 
     # Create TC time array, in this format: yyyymmddhhmm
     tctime = dstc.year.data.astype(int)*100000000 + dstc.month.data.astype(int)*1000000 + dstc.day.data.astype(int)*10000 + dstc.hr.data.astype(int)*100
