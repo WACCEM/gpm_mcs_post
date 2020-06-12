@@ -2,7 +2,7 @@
 #SBATCH -A m1867
 #SBATCH --job-name=rainspac
 #SBATCH -p debug
-#SBATCH --nodes=11
+#SBATCH --nodes=19
 #SBATCH --cpus-per-task=64
 #SBATCH -C haswell
 #SBATCH --time=00:10:00
@@ -10,10 +10,10 @@
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov
 #SBATCH --mail-type=END
-#SBATCH --output=mcs_monthly_rain_spac.out
+#SBATCH --output=log_mcs_monthly_rain_spac.out
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
-export THREADS=6
+export THREADS=4
 cd /global/homes/f/feng045/program/waccem/gpm/script
 runcommands.sh processlist_mcs_monthly_rain_spac
 date

@@ -1,19 +1,19 @@
 #!/bin/bash
 #SBATCH -A m1867
-#SBATCH --job-name=mapasia
-#SBATCH --qos=debug
-#SBATCH --nodes=4
+#SBATCH --job-name=rainapac
+#SBATCH -p debug
+#SBATCH --nodes=19
 #SBATCH --cpus-per-task=64
-#SBATCH --constraint=haswell
-#SBATCH --time=00:20:00
+#SBATCH -C haswell
+#SBATCH --time=00:10:00
 #SBATCH --exclusive
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov
 #SBATCH --mail-type=END
-#SBATCH --output=map_mcs_stats_asia.out
+#SBATCH --output=log_mcs_monthly_rain_apac.out
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
-export THREADS=20
+export THREADS=4
 cd /global/homes/f/feng045/program/waccem/gpm/script
-runcommands.sh processlist_calc_mcs_monthly_stats_asia
+runcommands.sh processlist_mcs_monthly_rain_apac
 date

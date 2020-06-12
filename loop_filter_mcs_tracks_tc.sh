@@ -5,9 +5,9 @@
 # For now, run this in Xarray (0.14.0) and Python 3.7 or lower
 conda activate /global/homes/f/feng045/envs/py37
 
-declare -a REGIONS=("spac")
-STARTYEAR=2014
-ENDYEAR=2019
+declare -a REGIONS=("apac")
+STARTYEAR=2016
+ENDYEAR=2016
 
 # Loop over each region
 for region in "${REGIONS[@]}"; do
