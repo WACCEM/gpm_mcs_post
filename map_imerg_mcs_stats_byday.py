@@ -219,6 +219,10 @@ for imcs in range(nmcs):
 #             idx_c = np.where(fcloudnumber == icn)
             idx_c = np.where(cloudtracknumber == itrack)
             idx_p = np.where(pcptracknumber == itrack)
+            # Check the number of pixels found for this track
+            if (len(idx_c[0]) == 0):
+                print(f'{pixfname}')
+                print(f'Warning: track #{itrack} has no matching pixel found! Something is not right.')
             
             # Set each frame with a number
             # This is suitable for variables that change with time. e.g. PF area
@@ -516,7 +520,7 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                             'percentiles': (['percentiles'], percentiles), \
                             'time': (['time'], months), \
                             }, \
-                    attrs={'title': 'MCS monthly statistics map', \
+                    attrs={'title': 'MCS daily statistics map', \
                            'total_number_of_times': nframes, \
                            'contact': 'Zhe Feng, zhe.feng@pnnl.gov', \
                            'created_on': time.ctime(time.time())})

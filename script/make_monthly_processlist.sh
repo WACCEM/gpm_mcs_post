@@ -14,8 +14,8 @@
 #region="spac"
 #region="apac"
 region=$1
-START=2014
-END=2019
+START=2010
+END=2012
 #runscript="run_map_mcs_stats.sh"
 runscript="run_mcs_monthly_precip.sh"
 #runscript="run_mcs_monthly_rainhov.sh"

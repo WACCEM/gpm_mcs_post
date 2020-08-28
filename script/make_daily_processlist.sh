@@ -10,8 +10,8 @@
 #region="afcsam"
 region=$1
 # Start/end year
-START=2014
-END=2019
+START=2010
+END=2012
 
 # Output list file name
 outfile="processlist_map_mcs_stats_daily_${region}"
@@ -22,7 +22,8 @@ outfile="processlist_map_mcs_stats_daily_${region}"
 for year in $(seq $START $END); do
 #for year in {2014..2014}; do
   # Loop over 365 days
-  for d in {0..364}; do 
+  # for d in {0..364}; do 
+  for d in {59..244}; do 
     echo run_map_mcs_stats_byday.sh ${year}0101 ${year}1231 $(date -d "${year}-01-01 + $d days" +'%Y %m %d';) ${region} >> ${outfile}
   done
 done

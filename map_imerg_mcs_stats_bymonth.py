@@ -96,13 +96,13 @@ print('Number of MCS: ', nmcs)
 trackidx = np.array(trackidx.values).astype(int)
 
 # Subset variables to tracks in the current month
-base_time = stats.base_time.isel(tracks=trackidx)
-lifetime = stats.length.isel(tracks=trackidx) * stats.time_resolution_hour
-tracks = stats.tracks.isel(tracks=trackidx)
-ccs_area = stats.ccs_area.isel(tracks=trackidx)
-pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0)
-mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx)
-starttrackresult = stats.starttrackresult.isel(tracks=trackidx)
+base_time = stats.base_time.isel(tracks=trackidx).load()
+lifetime = (stats.length.isel(tracks=trackidx) * stats.time_resolution_hour).load()
+tracks = stats.tracks.isel(tracks=trackidx).load()
+ccs_area = stats.ccs_area.isel(tracks=trackidx).load()
+pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0).load()
+mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx).load()
+starttrackresult = stats.starttrackresult.isel(tracks=trackidx).load()
 pf_maxrainrate = stats.pf_maxrainrate.isel(tracks=trackidx).load()
 total_rain = stats.total_rain.isel(tracks=trackidx).load()
 total_heavyrain = stats.total_heavyrain.isel(tracks=trackidx).load()
@@ -133,11 +133,6 @@ map_rainrateheavy = np.zeros((ny, nx))
 map_rainratemax = np.zeros((ny, nx))
 map_totalrainheavy = np.zeros((ny, nx))
 map_totalrain = np.zeros((ny, nx))
-# map_ccdbz20 = np.zeros((ny, nx))
-# map_ccrain_csa = np.zeros((ny, nx))
-# map_sfrain_csa = np.zeros((ny, nx))
-# map_ccrain_sl3d = np.zeros((ny, nx))
-# map_sfrain_sl3d = np.zeros((ny, nx))
 map_nhour_ccs = np.zeros((ny, nx))
 map_nhour_pf = np.zeros((ny, nx))
 # map_nhour_ccdbz20 = np.zeros((ny, nx))
@@ -152,9 +147,6 @@ map_init_ccs = np.zeros((ny, nx))
 map_pfspeed = np.zeros((ny, nx))
 map_uspeed = np.zeros((ny, nx))
 map_vspeed = np.zeros((ny, nx))
-# map_pfspeed_23 = np.zeros((ny, nx))
-# map_uspeed_23 = np.zeros((ny, nx))
-# map_vspeed_23 = np.zeros((ny, nx))
 map_pfspeed_mcs = np.zeros((ny, nx))
 map_uspeed_mcs = np.zeros((ny, nx))
 map_vspeed_mcs = np.zeros((ny, nx))
@@ -170,7 +162,6 @@ map_vspeed_mcs = np.zeros((ny, nx))
 # map_pfspeed_mcs_nw = np.zeros((ny, nx))
 # map_uspeed_mcs_nw = np.zeros((ny, nx))
 # map_vspeed_mcs_nw = np.zeros((ny, nx))
-# map_nhour_speed23 = np.zeros((ny, nx))
 map_nhour_speedmcs = np.zeros((ny, nx))
 # map_nhour_speedmcs_ne = np.zeros((ny, nx))
 # map_nhour_speedmcs_se = np.zeros((ny, nx))
@@ -238,13 +229,6 @@ for imcs in range(nmcs):
             # Put stats value onto the map
             temp_c = np.zeros((ny, nx))*np.NAN
             temp_p = np.zeros((ny, nx))*np.NAN
-#             temp_ccrain_csa = np.zeros((ny, nx))
-#             temp_sfrain_csa = np.zeros((ny, nx))
-#             temp_ccrain_sl3d = np.zeros((ny, nx))
-#             temp_sfrain_sl3d = np.zeros((ny, nx))
-#             temp_ccdbz20 = np.zeros((ny, nx))*np.NAN
-#             temp_corearea = np.zeros((ny, nx))*np.NAN
-#             temp_coremaxis = np.zeros((ny, nx))*np.NAN
             temp_totalrain = np.full((ny, nx), np.NAN)
             temp_totalrainheavy = np.full((ny, nx), np.NAN)
             temp_rainrateheavy = np.full((ny, nx), np.NAN)
@@ -279,14 +263,7 @@ for imcs in range(nmcs):
             temp_rainrateheavy[idx_p] = irainrateheavy
             temp_rainratemax[idx_p] = imaxrainrate
             # The following gives more precise location mapping
-#             temp_ccrain_csa[idx_conv_csa] = pcp[idx_conv_csa]
-#             temp_sfrain_csa[idx_strat_csa] = pcp[idx_strat_csa]
-#             temp_ccrain_sl3d[idx_conv_sl3d] = pcp[idx_conv_sl3d]
-#             temp_sfrain_sl3d[idx_strat_sl3d] = pcp[idx_strat_sl3d]
-#             temp_ccdbz20[idx_ccdbz20] = dbz20[idx_ccdbz20]
-#             # Use PF mask as proxy location to map core values
-#             temp_corearea[idx_p] = icorearea
-#             temp_coremaxis[idx_p] = icoremaxis
+            # Use PF mask as proxy location to map core values
             temp_pfspeed[idx_p] = ispeed
             temp_uspeed[idx_p] = iuspeed
             temp_vspeed[idx_p] = ivspeed
@@ -392,10 +369,6 @@ for imcs in range(nmcs):
             map_pfspeed[:,:] = np.nansum(np.dstack((temp_map_pfspeed, temp_pfspeed)), axis=2)
             map_uspeed[:,:] = np.nansum(np.dstack((temp_map_uspeed, temp_uspeed)), axis=2)
             map_vspeed[:,:] = np.nansum(np.dstack((temp_map_vspeed, temp_vspeed)), axis=2)
-#             map_ccrain_csa[:,:] += temp_ccrain_csa[:,:]
-#             map_sfrain_csa[:,:] += temp_sfrain_csa[:,:]
-#             map_ccrain_sl3d[:,:] += temp_ccrain_sl3d[:,:]
-#             map_sfrain_sl3d[:,:] += temp_sfrain_sl3d[:,:]
             map_nhour_ccs[idx_c] += 1
             map_nhour_pf[idx_p] += 1
 #             map_nhour_ccdbz20[idx_ccdbz20] += 1
@@ -434,9 +407,6 @@ map_totalrainheavy_avg = map_totalrainheavy / map_nhour_pf
 map_rainrateheavy_avg = map_rainrateheavy / map_nhour_pf
 map_rainratemax_avg = map_rainratemax / map_nhour_pf
 
-#map_ccdbz20_avg = map_ccdbz20 / map_nhour_ccdbz20
-#map_corearea_avg = map_corearea / map_nhour_pf
-#map_coremaxis_avg = map_coremaxis / map_nhour_pf
 map_pfspeed_avg = map_pfspeed / map_nhour_pf
 map_pfspeed_mcs_avg = map_pfspeed_mcs / map_nhour_speedmcs
 map_uspeed_avg = map_uspeed / map_nhour_pf
