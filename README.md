@@ -89,3 +89,5 @@
 	- *calc_mcs_seasonal_mean_statsmap_nospeed.py*
 
 	Calculate seasonal mean MCS statistics (e.g., MCS number, lifetime, area, max rain rate, etc.) and saves to a netCDF file.
+
+*  Job submission scripts using NERSC TaskFarmer for parallization are in the /scripts directory.
