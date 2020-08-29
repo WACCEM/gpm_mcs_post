@@ -18,14 +18,16 @@ region = sys.argv[3]
 # year = '2014'
 # month = '01'
 
-datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/daily/'
+# datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/daily/'
+datadir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
 datafiles = sorted(glob.glob(f'{datadir}mcs_statsmap_{year}{month}*nc'))
 nfiles = len(datafiles)
 
 print(year, month)
 print(f'Number of files: {nfiles}')
 
-outdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
+# outdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
+outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 outfile = f'{outdir}mcs_statsmap_{year}{month}.nc'
 os.makedirs(outdir, exist_ok=True)
 
@@ -45,6 +47,11 @@ lifetime_mean = (ds.lifetime_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour
 pf_area_mean = (ds.pf_area_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour_pf
 ccs_area_mean = (ds.ccs_area_mean * ds.mcs_nhour_ccs).sum(dim='time') / mcs_nhour_ccs
 
+totalrain_mean = (ds.totalrain_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour_pf
+totalrainheavy_mean = (ds.totalrainheavy_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour_pf
+rainrateheavy_mean = (ds.rainrateheavy_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour_pf
+rainratemax_mean = (ds.rainratemax_mean * ds.mcs_nhour_pf).sum(dim='time') / mcs_nhour_pf
+
 # Compute Epoch Time for the month
 months = np.zeros(1, dtype=int)
 months[0] = calendar.timegm(datetime.datetime(int(year), int(month), 1, 0, 0, 0, tzinfo=pytz.UTC).timetuple())
@@ -58,6 +65,10 @@ varlist = {'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(mcs_number_
             'lifetime_mean': (['time', 'lat', 'lon'], np.expand_dims(lifetime_mean, 0)), \
             'ccs_area_mean': (['time', 'lat', 'lon'], np.expand_dims(ccs_area_mean, 0)),  \
             'pf_area_mean': (['time', 'lat', 'lon'], np.expand_dims(pf_area_mean, 0)), \
+            'totalrain_mean': (['time', 'lat', 'lon'], np.expand_dims(totalrain_mean, 0)), \
+            'totalrainheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(totalrainheavy_mean, 0)), \
+            'rainrateheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(rainrateheavy_mean, 0)), \
+            'rainratemax_mean': (['time', 'lat', 'lon'], np.expand_dims(rainratemax_mean, 0)), \
             'initiation_ccs': (['time', 'lat', 'lon'], np.expand_dims(initiation_ccs, 0)), \
           }
 
@@ -104,6 +115,18 @@ dsmap.ccs_area_mean.attrs['units'] = 'km2'
 
 dsmap.pf_area_mean.attrs['long_name'] = 'MCS precipitation feature area mean'
 dsmap.pf_area_mean.attrs['units'] = 'km2'
+
+dsmap.totalrain_mean.attrs['long_name'] = 'MCS total precipitation mean'
+dsmap.totalrain_mean.attrs['units'] = 'mm'
+
+dsmap.totalrainheavy_mean.attrs['long_name'] = 'MCS total heavy precipitation (rain rate > 10 mm/h) mean'
+dsmap.totalrainheavy_mean.attrs['units'] = 'mm'
+
+dsmap.rainrateheavy_mean.attrs['long_name'] = 'MCS heavy rain rate (rain rate > 10 mm/h) mean'
+dsmap.rainrateheavy_mean.attrs['units'] = 'mm/h'
+
+dsmap.rainratemax_mean.attrs['long_name'] = 'MCS max rain rate mean'
+dsmap.rainratemax_mean.attrs['units'] = 'mm/h'
 
 dsmap.initiation_ccs.attrs['long_name'] = 'MCS convective initiation hours defined by cold cloud shield'
 dsmap.initiation_ccs.attrs['units'] = 'hour'

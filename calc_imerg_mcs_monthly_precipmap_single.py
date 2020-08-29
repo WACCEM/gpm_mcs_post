@@ -20,7 +20,8 @@ month = (sys.argv[4]).zfill(2)
 region = sys.argv[5]
 pcpvarname = 'precipitation'
 
-mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
+# mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
+mcsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
 outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 mcsfiles = sorted(glob.glob(mcsdir + 'mcstrack_' + year + month + '??_????.nc'))
 print(mcsdir)

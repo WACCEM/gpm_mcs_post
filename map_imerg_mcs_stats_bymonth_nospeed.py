@@ -10,6 +10,7 @@ History:
 import numpy as np
 import xarray as xr
 import sys, glob, os
+from netCDF4 import Dataset
 import time, datetime, calendar, pytz
 from pytz import utc
 
@@ -48,9 +49,12 @@ region = sys.argv[5]
 #year = 2018
 #month = 10
 
-stats_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
-pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
-output_dir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
+stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
+pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
+output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
+# stats_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/'
+# pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
+# output_dir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/monthly/'
 
 yearstr = str(year)
 monthstr = str(month).zfill(2)
@@ -92,18 +96,18 @@ print('Number of MCS: ', nmcs)
 trackidx = np.array(trackidx.values).astype(int)
 
 # Subset variables to tracks in the current month
-base_time = stats.base_time.isel(tracks=trackidx)
-lifetime = stats.length.isel(tracks=trackidx) * stats.time_resolution_hour
-tracks = stats.tracks.isel(tracks=trackidx)
-ccs_area = stats.ccs_area.isel(tracks=trackidx)
-pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0)
-# mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx)
-starttrackresult = stats.starttrackresult.isel(tracks=trackidx)
-# # cloudnumber = stats.cloudnumber.isel(tracks=trackidx)
-# speed = stats.movement_r_meters_per_second.isel(tracks=trackidx)
-# # movement_x and movement_y are in [km]/timestep, divide by 3.6 (1000m/3600s) to convert to [m/s]
-# uspeed = stats.movement_storm_x.isel(tracks=trackidx)/3.6
-# vspeed = stats.movement_storm_y.isel(tracks=trackidx)/3.6
+base_time = stats.base_time.isel(tracks=trackidx).load()
+lifetime = (stats.length.isel(tracks=trackidx) * stats.time_resolution_hour).load()
+tracks = stats.tracks.isel(tracks=trackidx).load()
+ccs_area = stats.ccs_area.isel(tracks=trackidx).load()
+pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0).load()
+mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx).load()
+starttrackresult = stats.starttrackresult.isel(tracks=trackidx).load()
+pf_maxrainrate = stats.pf_maxrainrate.isel(tracks=trackidx).load()
+total_rain = stats.total_rain.isel(tracks=trackidx).load()
+total_heavyrain = stats.total_heavyrain.isel(tracks=trackidx).load()
+rainrate_heavyrain = stats.rainrate_heavyrain.isel(tracks=trackidx).load()
+# cloudnumber = stats.cloudnumber.isel(tracks=trackidx)
 
 
 #    datetime_to_timestamp
@@ -121,33 +125,18 @@ map_lifetime_all = np.zeros((nmcs, ny, nx))*np.NAN
 
 map_ccsarea = np.zeros((ny, nx))
 map_pfarea = np.zeros((ny, nx))
-# map_ccdbz20 = np.zeros((ny, nx))
-# map_ccrain_csa = np.zeros((ny, nx))
-# map_sfrain_csa = np.zeros((ny, nx))
-# map_ccrain_sl3d = np.zeros((ny, nx))
-# map_sfrain_sl3d = np.zeros((ny, nx))
+map_rainrateheavy = np.zeros((ny, nx))
+map_rainratemax = np.zeros((ny, nx))
+map_totalrainheavy = np.zeros((ny, nx))
+map_totalrain = np.zeros((ny, nx))
 map_nhour_ccs = np.zeros((ny, nx))
 map_nhour_pf = np.zeros((ny, nx))
-# map_nhour_ccdbz20 = np.zeros((ny, nx))
 map_nmcs_ccs = np.zeros((ny, nx))
 map_nmcs_pf = np.zeros((ny, nx))
 map_init_ccs = np.zeros((ny, nx))
 # map_init_pf = np.zeros((ny, nx))
 # map_genesis_ccs = np.zeros((ny, nx))
 # map_genesis_pf = np.zeros((ny, nx))
-# map_corearea = np.zeros((ny, nx))
-# map_coremaxis = np.zeros((ny, nx))
-# map_pfspeed = np.zeros((ny, nx))
-# map_uspeed = np.zeros((ny, nx))
-# map_vspeed = np.zeros((ny, nx))
-# map_pfspeed_23 = np.zeros((ny, nx))
-# map_uspeed_23 = np.zeros((ny, nx))
-# map_vspeed_23 = np.zeros((ny, nx))
-# map_pfspeed_mcs = np.zeros((ny, nx))
-# map_uspeed_mcs = np.zeros((ny, nx))
-# map_vspeed_mcs = np.zeros((ny, nx))
-# map_nhour_speed23 = np.zeros((ny, nx))
-# map_nhour_speedmcs = np.zeros((ny, nx))
 
 nframes = 0
 
@@ -194,80 +183,57 @@ for imcs in range(nmcs):
             # Get values from stats variables
             iccsarea = ccs_area.values[imcs, it]
             ipfarea = pf_area.values[imcs, it]
-#             icorearea = core_area.values[imcs, it]
-#             icoremaxis = core_maxis.values[imcs, it]
-#             ispeed = speed.values[imcs, it]
-#             iuspeed = uspeed.values[imcs, it]
-#             ivspeed = vspeed.values[imcs, it]
+            itotalrain = total_rain.values[imcs, it]
+            iheavyrain = total_heavyrain.values[imcs, it]
+            irainrateheavy = rainrate_heavyrain.values[imcs, it]
+            # Get max rain rate from all PFs
+            imaxrainrate = np.nanmax(pf_maxrainrate.values[imcs, it, :])
+
             # Put stats value onto the map
             temp_c = np.zeros((ny, nx))*np.NAN
             temp_p = np.zeros((ny, nx))*np.NAN
-#             temp_ccrain_csa = np.zeros((ny, nx))
-#             temp_sfrain_csa = np.zeros((ny, nx))
-#             temp_ccrain_sl3d = np.zeros((ny, nx))
-#             temp_sfrain_sl3d = np.zeros((ny, nx))
-#             temp_ccdbz20 = np.zeros((ny, nx))*np.NAN
-#             temp_corearea = np.zeros((ny, nx))*np.NAN
-#             temp_coremaxis = np.zeros((ny, nx))*np.NAN
-#             temp_pfspeed = np.full((ny, nx), np.NAN)
-#             temp_uspeed = np.full((ny, nx), np.NAN)
-#             temp_vspeed = np.full((ny, nx), np.NAN)
+            temp_totalrain = np.full((ny, nx), np.NAN)
+            temp_totalrainheavy = np.full((ny, nx), np.NAN)
+            temp_rainrateheavy = np.full((ny, nx), np.NAN)
+            temp_rainratemax = np.full((ny, nx), np.NAN)
             
             temp_c[idx_c] = iccsarea
             temp_p[idx_p] = ipfarea
-#             temp_ccrain_csa[idx_conv_csa] = pcp[idx_conv_csa]
-#             temp_sfrain_csa[idx_strat_csa] = pcp[idx_strat_csa]
-#             temp_ccrain_sl3d[idx_conv_sl3d] = pcp[idx_conv_sl3d]
-#             temp_sfrain_sl3d[idx_strat_sl3d] = pcp[idx_strat_sl3d]
-#             temp_ccdbz20[idx_ccdbz20] = dbz20[idx_ccdbz20]
-#             # Use PF mask as proxy location to map core values
-#             temp_corearea[idx_p] = icorearea
-#             temp_coremaxis[idx_p] = icoremaxis
-#             temp_pfspeed[idx_p] = ispeed
-#             temp_uspeed[idx_p] = iuspeed
-#             temp_vspeed[idx_p] = ivspeed
-            
+
+            # Assign single PF value to the entire PF mask
+            # This is to increase area for certain extreme statistics (e.g. max rain rate)
+            # to make results less noisy. Absolute location wise this is just an approximation.
+            temp_totalrain[idx_p] = itotalrain
+            temp_totalrainheavy[idx_p] = iheavyrain
+            temp_rainrateheavy[idx_p] = irainrateheavy
+            temp_rainratemax[idx_p] = imaxrainrate
+
             # If MCS start status is not a split, check for initiation/genesis
             if (istartstatus != 13):
                 # If time step is == 0 (initiation)
                 if (it == 0):
                     map_init_ccs[idx_c] += 1
 
-#             # Keep speed if MCS status is met
-#             if (imcsstatus == 1):
-#                 temp_map_pfspeed_mcs = np.copy(map_pfspeed_mcs)
-#                 temp_map_uspeed_mcs = np.copy(map_uspeed_mcs)
-#                 temp_map_vspeed_mcs = np.copy(map_vspeed_mcs)
-#                 map_pfspeed_mcs[:,:] = np.nansum(np.dstack((temp_map_pfspeed_mcs, temp_pfspeed)), axis=2)
-#                 map_uspeed_mcs[:,:] = np.nansum(np.dstack((temp_map_uspeed_mcs, temp_uspeed)), axis=2)
-#                 map_vspeed_mcs[:,:] = np.nansum(np.dstack((temp_map_vspeed_mcs, temp_vspeed)), axis=2)
-#                 map_nhour_speedmcs[idx_p] += 1
-                    
             # Make a temporary copy of the output array
             temp_map_ccsarea = np.copy(map_ccsarea)
             temp_map_pfarea = np.copy(map_pfarea)
-#             temp_map_ccdbz20 = np.copy(map_ccdbz20)
-#             temp_map_corearea = np.copy(map_corearea)
-#             temp_map_coremaxis = np.copy(map_coremaxis)
-#             temp_map_pfspeed = np.copy(map_pfspeed)
-#             temp_map_uspeed = np.copy(map_uspeed)
-#             temp_map_vspeed = np.copy(map_vspeed)
+
+            temp_map_totalrain = np.copy(map_totalrain)
+            temp_map_totalrainheavy = np.copy(map_totalrainheavy)
+            temp_map_rainrateheavy = np.copy(map_rainrateheavy)
+            temp_map_rainratemax = np.copy(map_rainratemax)
+
             # Stack two arrays and use nansum, then save it back to output array
             map_ccsarea[:,:] = np.nansum(np.dstack((temp_map_ccsarea, temp_c)), axis=2)
             map_pfarea[:,:] = np.nansum(np.dstack((temp_map_pfarea, temp_p)), axis=2)
-#             map_ccdbz20[:,:] = np.nansum(np.dstack((temp_map_ccdbz20, temp_ccdbz20)), axis=2)
-#             map_corearea[:,:] = np.nansum(np.dstack((temp_map_corearea, temp_corearea)), axis=2)
-#             map_coremaxis[:,:] = np.nansum(np.dstack((temp_map_coremaxis, temp_coremaxis)), axis=2)
-#             map_pfspeed[:,:] = np.nansum(np.dstack((temp_map_pfspeed, temp_pfspeed)), axis=2)
-#             map_uspeed[:,:] = np.nansum(np.dstack((temp_map_uspeed, temp_uspeed)), axis=2)
-#             map_vspeed[:,:] = np.nansum(np.dstack((temp_map_vspeed, temp_vspeed)), axis=2)
-#             map_ccrain_csa[:,:] += temp_ccrain_csa[:,:]
-#             map_sfrain_csa[:,:] += temp_sfrain_csa[:,:]
-#             map_ccrain_sl3d[:,:] += temp_ccrain_sl3d[:,:]
-#             map_sfrain_sl3d[:,:] += temp_sfrain_sl3d[:,:]
+
+            map_totalrain[:,:] = np.nansum(np.dstack((temp_map_totalrain, temp_totalrain)), axis=2)
+            map_totalrainheavy[:,:] = np.nansum(np.dstack((temp_map_totalrainheavy, temp_totalrainheavy)), axis=2)
+            map_rainrateheavy[:,:] = np.nansum(np.dstack((temp_map_rainrateheavy, temp_rainrateheavy)), axis=2)
+            map_rainratemax[:,:] = np.nansum(np.dstack((temp_map_rainratemax, temp_rainratemax)), axis=2)
+
             map_nhour_ccs[idx_c] += 1
             map_nhour_pf[idx_p] += 1
-#             map_nhour_ccdbz20[idx_ccdbz20] += 1
             
             # Set all pixels to the track number, this is a mask for the entire duration of the MCS
 #             temp_track[np.where(cloudtracknumber == itrack)] = itrack
@@ -299,18 +265,11 @@ for imcs in range(nmcs):
 # Calculate conditional mean (divide sum by total number of hours at each pixel)
 map_ccsarea_avg = map_ccsarea / map_nhour_ccs
 map_pfarea_avg = map_pfarea / map_nhour_pf
-#map_ccdbz20_avg = map_ccdbz20 / map_nhour_ccdbz20
-#map_corearea_avg = map_corearea / map_nhour_pf
-#map_coremaxis_avg = map_coremaxis / map_nhour_pf
-#map_pfspeed_avg = map_pfspeed / map_nhour_pf
-#map_pfspeed_mcs_avg = map_pfspeed_mcs / map_nhour_speedmcs
-#map_pfspeed_23_avg = map_pfspeed_23 / map_nhour_speed23
-#map_uspeed_avg = map_uspeed / map_nhour_pf
-#map_uspeed_mcs_avg = map_uspeed_mcs / map_nhour_speedmcs
-#map_uspeed_23_avg = map_uspeed_23 / map_nhour_speed23
-#map_vspeed_avg = map_vspeed / map_nhour_pf
-#map_vspeed_mcs_avg = map_vspeed_mcs / map_nhour_speedmcs
-#map_vspeed_23_avg = map_vspeed_23 / map_nhour_speed23
+
+map_totalrain_avg = map_totalrain / map_nhour_pf
+map_totalrainheavy_avg = map_totalrainheavy / map_nhour_pf
+map_rainrateheavy_avg = map_rainrateheavy / map_nhour_pf
+map_rainratemax_avg = map_rainratemax / map_nhour_pf
 
 map_lifetime_avg = np.nanmean(map_lifetime_all, axis=0)
 
@@ -324,35 +283,18 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                     'mcs_number_pf': (['time', 'lat', 'lon'], np.expand_dims(map_nmcs_pf, 0)), \
                     'mcs_nhour_ccs': (['time', 'lat', 'lon'], np.expand_dims(map_nhour_ccs, 0)), \
                     'mcs_nhour_pf': (['time', 'lat', 'lon'], np.expand_dims(map_nhour_pf, 0)), \
-#                     'mcs_nhour_speedmcs': (['time', 'lat', 'lon'], np.expand_dims(map_nhour_speedmcs, 0)), \
-#                     'mcs_nhour_speed23': (['time', 'lat', 'lon'], np.expand_dims(map_nhour_speed23, 0)), \
-#                     'cc_rain_csa': (['time', 'lat', 'lon'], np.expand_dims(map_ccrain_csa, 0)), \
-#                     'sf_rain_csa': (['time', 'lat', 'lon'], np.expand_dims(map_sfrain_csa, 0)), \
-#                     'cc_rain_sl3d': (['time', 'lat', 'lon'], np.expand_dims(map_ccrain_sl3d, 0)), \
-#                     'sf_rain_sl3d': (['time', 'lat', 'lon'], np.expand_dims(map_sfrain_sl3d, 0)), \
-                     'lifetime_mean': (['time', 'lat', 'lon'], np.expand_dims(map_lifetime_avg, 0)), \
-                     'ccs_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_ccsarea_avg, 0)),  \
-                     'pf_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_pfarea_avg, 0)), \
-#                     'cc_dbz20_mean': (['time', 'lat', 'lon'], np.expand_dims(map_ccdbz20_avg, 0)), \
-#                     'core_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_corearea_avg, 0)), \
-#                     'core_majoraxislength_mean': (['time', 'lat', 'lon'], np.expand_dims(map_coremaxis_avg, 0)), \
+                    'lifetime_mean': (['time', 'lat', 'lon'], np.expand_dims(map_lifetime_avg, 0)), \
+                    'ccs_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_ccsarea_avg, 0)),  \
+                    'pf_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_pfarea_avg, 0)), \
+                    'totalrain_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrain_avg, 0)), \
+                    'totalrainheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrainheavy_avg, 0)), \
+                    'rainrateheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_rainrateheavy_avg, 0)), \
+                    'rainratemax_mean': (['time', 'lat', 'lon'], np.expand_dims(map_rainratemax_avg, 0)), \
                     'initiation_ccs': (['time', 'lat', 'lon'], np.expand_dims(map_init_ccs, 0)), \
 #                     'initiation_pf': (['time', 'lat', 'lon'], np.expand_dims(map_init_pf, 0)), \
 #                     'genesis_ccs': (['time', 'lat', 'lon'], np.expand_dims(map_genesis_ccs, 0)), \
 #                     'genesis_pf': (['time', 'lat', 'lon'], np.expand_dims(map_genesis_pf, 0)), \
-#                      'pf_speed': (['time', 'lat', 'lon'], np.expand_dims(map_pfspeed_avg, 0)), \
-#                      'pf_speed_mcs': (['time', 'lat', 'lon'], np.expand_dims(map_pfspeed_mcs_avg, 0)), \
-#                     'pf_speed_23': (['time', 'lat', 'lon'], np.expand_dims(map_pfspeed_23_avg, 0)), \
-#                      'pf_uspeed': (['time', 'lat', 'lon'], np.expand_dims(map_uspeed_avg, 0)), \
-#                      'pf_uspeed_mcs': (['time', 'lat', 'lon'], np.expand_dims(map_uspeed_mcs_avg, 0)), \
-#                     'pf_uspeed_23': (['time', 'lat', 'lon'], np.expand_dims(map_uspeed_23_avg, 0)), \
-#                      'pf_vspeed': (['time', 'lat', 'lon'], np.expand_dims(map_vspeed_avg, 0)), \
-#                      'pf_vspeed_mcs': (['time', 'lat', 'lon'], np.expand_dims(map_vspeed_mcs_avg, 0)), \
-#                     'pf_vspeed_23': (['time', 'lat', 'lon'], np.expand_dims(map_vspeed_23_avg, 0)), \
 #                     'lifetime_pt': (['time', 'percentiles', 'lat', 'lon'], np.expand_dims(map_lifetime_pts, 0)), \
-#                     'ccs_area_pt': (['time', 'percentiles', 'lat', 'lon'], np.expand_dims(map_ccsarea_pts, 0)), \
-#                     'pf_area_pt': (['time', 'percentiles', 'lat', 'lon'], np.expand_dims(map_pfarea_pts, 0)), \
-#                     'cc_dbz20_pt': (['time', 'percentiles', 'lat', 'lon'], np.expand_dims(map_ccdbz20_pts, 0)), \
                      'ntimes': (['time'], xr.DataArray(nframes).expand_dims('time', axis=0)), \
                    }, \
                     coords={'lon': (['lon'], lon), \
@@ -393,25 +335,7 @@ dsmap.mcs_nhour_ccs.attrs['units'] = 'hour'
 dsmap.mcs_nhour_pf.attrs['long_name'] = 'Number of MCS hours defined by precipitation feature'
 dsmap.mcs_nhour_pf.attrs['units'] = 'hour'
 
-# dsmap.mcs_nhour_speedmcs.attrs['long_name'] = 'Number of MCS hours for propagation speed (MCS status is met)'
-# dsmap.mcs_nhour_speedmcs.attrs['units'] = 'hour'
-
-# dsmap.mcs_nhour_speed23.attrs['long_name'] = 'Number of MCS hours for propagation speed (MCS genesis/mature stage)'
-# dsmap.mcs_nhour_speed23.attrs['units'] = 'hour'
-
 # Mean variables
-# dsmap.cc_rain_csa.attrs['long_name'] = 'MCS convective precipitation accumulation (CSA)'
-# dsmap.cc_rain_csa.attrs['units'] = 'mm'
-
-# dsmap.sf_rain_csa.attrs['long_name'] = 'MCS stratiform precipitation accumulation (CSA)'
-# dsmap.sf_rain_csa.attrs['units'] = 'mm'
-
-# dsmap.cc_rain_sl3d.attrs['long_name'] = 'MCS convective precipitation accumulation (SL3D)'
-# dsmap.cc_rain_sl3d.attrs['units'] = 'mm'
-
-# dsmap.sf_rain_sl3d.attrs['long_name'] = 'MCS stratiform precipitation accumulation (SL3D)'
-# dsmap.sf_rain_sl3d.attrs['units'] = 'mm'
-
 dsmap.lifetime_mean.attrs['long_name'] = 'MCS lifetime mean'
 dsmap.lifetime_mean.attrs['units'] = 'hour'
 
@@ -421,14 +345,17 @@ dsmap.ccs_area_mean.attrs['units'] = 'km2'
 dsmap.pf_area_mean.attrs['long_name'] = 'MCS precipitation feature area mean'
 dsmap.pf_area_mean.attrs['units'] = 'km2'
 
-# dsmap.cc_dbz20_mean.attrs['long_name'] = 'MCS convective 20dBZ echo-top height mean'
-# dsmap.cc_dbz20_mean.attrs['units'] = 'km'
+dsmap.totalrain_mean.attrs['long_name'] = 'MCS total precipitation mean'
+dsmap.totalrain_mean.attrs['units'] = 'mm'
 
-# dsmap.core_area_mean.attrs['long_name'] = 'MCS largest convective core area mean'
-# dsmap.core_area_mean.attrs['units'] = 'km2'
+dsmap.totalrainheavy_mean.attrs['long_name'] = 'MCS total heavy precipitation (rain rate > 10 mm/h) mean'
+dsmap.totalrainheavy_mean.attrs['units'] = 'mm'
 
-# dsmap.core_majoraxislength_mean.attrs['long_name'] = 'MCS largest convective core major axis length mean'
-# dsmap.core_majoraxislength_mean.attrs['units'] = 'km'
+dsmap.rainrateheavy_mean.attrs['long_name'] = 'MCS heavy rain rate (rain rate > 10 mm/h) mean'
+dsmap.rainrateheavy_mean.attrs['units'] = 'mm/h'
+
+dsmap.rainratemax_mean.attrs['long_name'] = 'MCS max rain rate mean'
+dsmap.rainratemax_mean.attrs['units'] = 'mm/h'
 
 dsmap.initiation_ccs.attrs['long_name'] = 'MCS convective initiation hours defined by cold cloud shield'
 dsmap.initiation_ccs.attrs['units'] = 'hour'
@@ -442,83 +369,18 @@ dsmap.initiation_ccs.attrs['units'] = 'hour'
 # dsmap.genesis_pf.attrs['long_name'] = 'MCS genesis hours defined by precipitation feature'
 # dsmap.genesis_pf.attrs['units'] = 'hour'
 
-# dsmap.pf_speed.attrs['long_name'] = 'Propagation speed for all times'
-# dsmap.pf_speed.attrs['units'] = 'm/s'
-
-# dsmap.pf_speed_mcs.attrs['long_name'] = 'Propagation speed when MCS status is met'
-# dsmap.pf_speed_mcs.attrs['units'] = 'm/s'
-
-# dsmap.pf_speed_23.attrs['long_name'] = 'Propagation speed during MCS genesis and mature stages'
-# dsmap.pf_speed_23.attrs['units'] = 'm/s'
-
-# dsmap.pf_uspeed.attrs['long_name'] = 'Propagation speed (x-direction) for all times'
-# dsmap.pf_uspeed.attrs['units'] = 'm/s'
-
-# dsmap.pf_uspeed_mcs.attrs['long_name'] = 'Propagation speed (x-direction) when MCS status is met'
-# dsmap.pf_uspeed_mcs.attrs['units'] = 'm/s'
-
-# dsmap.pf_uspeed_23.attrs['long_name'] = 'Propagation speed (x-direction) during MCS genesis and mature stages'
-# dsmap.pf_uspeed_23.attrs['units'] = 'm/s'
-
-# dsmap.pf_vspeed.attrs['long_name'] = 'Propagation speed (y-direction) for all times'
-# dsmap.pf_vspeed.attrs['units'] = 'm/s'
-
-# dsmap.pf_vspeed_mcs.attrs['long_name'] = 'Propagation speed (y-direction) when MCS status is met'
-# dsmap.pf_vspeed_mcs.attrs['units'] = 'm/s'
-
-# dsmap.pf_vspeed_23.attrs['long_name'] = 'Propagation speed (y-direction) during MCS genesis and mature stages'
-# dsmap.pf_vspeed_23.attrs['units'] = 'm/s'
-
 # # Percentile variables
 # dsmap.lifetime_pt.attrs['long_name'] = 'MCS lifetime percentiles'
 # dsmap.lifetime_pt.attrs['units'] = 'hour'
 
-# dsmap.ccs_area_pt.attrs['long_name'] = 'MCS cold cloud shield area percentiles'
-# dsmap.ccs_area_pt.attrs['units'] = 'km2'
-
-# dsmap.pf_area_pt.attrs['long_name'] = 'MCS precipitation feature area percentiles'
-# dsmap.pf_area_pt.attrs['units'] = 'km2'
-
-# dsmap.cc_dbz20_pt.attrs['long_name'] = 'MCS convective 20dBZ echo-top height percentiles'
-# dsmap.cc_dbz20_pt.attrs['units'] = 'km'
 
 fillvalue = np.nan
+# Set encoding/compression for all variables
+comp = dict(zlib=True, _FillValue=fillvalue, dtype='float32')
+encoding = {var: comp for var in dsmap.data_vars}
+
 dsmap.to_netcdf(path=output_file, mode='w', format='NETCDF4_CLASSIC', unlimited_dims='time', \
-                encoding={'lat': {'zlib':True, 'dtype': 'float32'}, \
-                          'lon': {'zlib':True, 'dtype': 'float32'}, \
-                          'mcs_number_ccs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'mcs_number_pf':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'mcs_nhour_ccs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'mcs_nhour_pf':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'mcs_nhour_speedmcs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'mcs_nhour_speed23':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'cc_rain_csa':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'sf_rain_csa':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'cc_rain_sl3d':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'sf_rain_sl3d':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'lifetime_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'ccs_area_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'pf_area_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'cc_dbz20_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'core_area_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'core_majoraxislength_mean':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                          'initiation_ccs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'initiation_pf':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'genesis_ccs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'genesis_pf':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_speed':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_speed_mcs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_speed_23':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_uspeed':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_uspeed_mcs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_uspeed_23':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_vspeed':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_vspeed_mcs':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_vspeed_23':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'lifetime_pt':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'ccs_area_pt':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'pf_area_pt':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-#                           'cc_dbz20_pt':{'zlib':True, '_FillValue':fillvalue, 'dtype':'float32'}, \
-                         })
+                encoding=encoding)
+
 print('Map output saved as: ', output_file)
 

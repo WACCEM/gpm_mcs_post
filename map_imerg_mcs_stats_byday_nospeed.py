@@ -58,8 +58,8 @@ pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region
 yearstr = str(year)
 monthstr = str(month).zfill(2)
 daystr = str(day).zfill(2)
-stats_file = f'{stats_path}robust_mcs_tracks_{sdate}_{edate}.nc'
-#stats_file = f'{stats_path}robust_mcs_tracks_extc_{sdate}_{edate}.nc'
+# stats_file = f'{stats_path}robust_mcs_tracks_{sdate}_{edate}.nc'
+stats_file = f'{stats_path}robust_mcs_tracks_extc_{sdate}_{edate}.nc'
 # Open stats file
 stats = xr.open_dataset(stats_file)
 #stats.load()
@@ -67,7 +67,7 @@ stats = xr.open_dataset(stats_file)
 pixel_files = sorted(glob.glob(f'{pixel_path}{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_dir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/stats_ccs4_4h/daily/'
+output_dir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
 output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}{daystr}.nc'
 os.makedirs(output_dir, exist_ok=True)
 
@@ -106,6 +106,10 @@ ccs_area = stats.ccs_area.isel(tracks=trackidx).load()
 pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0).load()
 # mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx).load()
 starttrackresult = stats.starttrackresult.isel(tracks=trackidx).load()
+pf_maxrainrate = stats.pf_maxrainrate.isel(tracks=trackidx).load()
+total_rain = stats.total_rain.isel(tracks=trackidx).load()
+total_heavyrain = stats.total_heavyrain.isel(tracks=trackidx).load()
+rainrate_heavyrain = stats.rainrate_heavyrain.isel(tracks=trackidx).load()
 # cloudnumber = stats.cloudnumber.isel(tracks=trackidx)
 # speed = stats.movement_r_meters_per_second.isel(tracks=trackidx).load()
 # # movement_x and movement_y are in [km]/timestep, divide by 3.6 (1000m/3600s) to convert to [m/s]
@@ -128,6 +132,10 @@ map_lifetime_all = np.zeros((nmcs, ny, nx))*np.NAN
 
 map_ccsarea = np.zeros((ny, nx))
 map_pfarea = np.zeros((ny, nx))
+map_rainrateheavy = np.zeros((ny, nx))
+map_rainratemax = np.zeros((ny, nx))
+map_totalrainheavy = np.zeros((ny, nx))
+map_totalrain = np.zeros((ny, nx))
 map_nhour_ccs = np.zeros((ny, nx))
 map_nhour_pf = np.zeros((ny, nx))
 map_nmcs_ccs = np.zeros((ny, nx))
@@ -166,7 +174,7 @@ for imcs in range(nmcs):
             pixfname = time_to_pixfilename.get(base_times[imcs, it], 'None')
         # Check to make sure the basetime key exist in the dictionary before proceeding
         if (pixfname != 'None'):
-#             print(pixfname)
+            # print(pixfname)
             
             # Read pixel data
             ds = Dataset(pixfname)
@@ -177,18 +185,39 @@ for imcs in range(nmcs):
 #             idx_c = np.where(fcloudnumber == icn)
             idx_c = np.where(cloudtracknumber == itrack)
             idx_p = np.where(pcptracknumber == itrack)
+            # Check the number of pixels found for this track
+            if (len(idx_c[0]) == 0):
+                print(f'{pixfname}')
+                print(f'Warning: track #{itrack} has no matching pixel found! Something is not right.')
             
             # Set each frame with a number
             # This is suitable for variables that change with time. e.g. PF area
             # Get values from stats variables
             iccsarea = ccs_area.values[imcs, it]
             ipfarea = pf_area.values[imcs, it]
+            itotalrain = total_rain.values[imcs, it]
+            iheavyrain = total_heavyrain.values[imcs, it]
+            irainrateheavy = rainrate_heavyrain.values[imcs, it]
+            # Get max rain rate from all PFs
+            imaxrainrate = np.nanmax(pf_maxrainrate.values[imcs, it, :])
+
             # Put stats value onto the map
             temp_c = np.zeros((ny, nx))*np.NAN
             temp_p = np.zeros((ny, nx))*np.NAN
-            
+            temp_totalrain = np.full((ny, nx), np.NAN)
+            temp_totalrainheavy = np.full((ny, nx), np.NAN)
+            temp_rainrateheavy = np.full((ny, nx), np.NAN)
+            temp_rainratemax = np.full((ny, nx), np.NAN)
+            temp_pfspeed = np.full((ny, nx), np.NAN)
+            temp_uspeed = np.full((ny, nx), np.NAN)
+            temp_vspeed = np.full((ny, nx), np.NAN)
+
             temp_c[idx_c] = iccsarea
             temp_p[idx_p] = ipfarea
+            temp_totalrain[idx_p] = itotalrain
+            temp_totalrainheavy[idx_p] = iheavyrain
+            temp_rainrateheavy[idx_p] = irainrateheavy
+            temp_rainratemax[idx_p] = imaxrainrate
 
             # If MCS start status is not a split, check for initiation/genesis
             if (istartstatus != 13):
@@ -199,9 +228,21 @@ for imcs in range(nmcs):
             # Make a temporary copy of the output array
             temp_map_ccsarea = np.copy(map_ccsarea)
             temp_map_pfarea = np.copy(map_pfarea)
+
+            temp_map_totalrain = np.copy(map_totalrain)
+            temp_map_totalrainheavy = np.copy(map_totalrainheavy)
+            temp_map_rainrateheavy = np.copy(map_rainrateheavy)
+            temp_map_rainratemax = np.copy(map_rainratemax)
+
             # Stack two arrays and use nansum, then save it back to output array
             map_ccsarea[:,:] = np.nansum(np.dstack((temp_map_ccsarea, temp_c)), axis=2)
             map_pfarea[:,:] = np.nansum(np.dstack((temp_map_pfarea, temp_p)), axis=2)
+
+            map_totalrain[:,:] = np.nansum(np.dstack((temp_map_totalrain, temp_totalrain)), axis=2)
+            map_totalrainheavy[:,:] = np.nansum(np.dstack((temp_map_totalrainheavy, temp_totalrainheavy)), axis=2)
+            map_rainrateheavy[:,:] = np.nansum(np.dstack((temp_map_rainrateheavy, temp_rainrateheavy)), axis=2)
+            map_rainratemax[:,:] = np.nansum(np.dstack((temp_map_rainratemax, temp_rainratemax)), axis=2)
+
             map_nhour_ccs[idx_c] += 1
             map_nhour_pf[idx_p] += 1
             
@@ -224,13 +265,18 @@ for imcs in range(nmcs):
     map_nmcs_ccs[:,:] += temp_nmcs_ccs[:,:]
     map_nmcs_pf[:,:] += temp_nmcs_pf[:,:]
 
-
 percentiles = [50,75,90,95]
 map_lifetime_pts = np.nanpercentile(map_lifetime_all, percentiles, axis=0)
 
 # Calculate conditional mean (divide sum by total number of hours at each pixel)
 map_ccsarea_avg = map_ccsarea / map_nhour_ccs
 map_pfarea_avg = map_pfarea / map_nhour_pf
+
+map_totalrain_avg = map_totalrain / map_nhour_pf
+map_totalrainheavy_avg = map_totalrainheavy / map_nhour_pf
+map_rainrateheavy_avg = map_rainrateheavy / map_nhour_pf
+map_rainratemax_avg = map_rainratemax / map_nhour_pf
+
 map_lifetime_avg = np.nanmean(map_lifetime_all, axis=0)
 
 
@@ -246,6 +292,12 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                     'lifetime_mean': (['time', 'lat', 'lon'], np.expand_dims(map_lifetime_avg, 0)), \
                     'ccs_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_ccsarea_avg, 0)),  \
                     'pf_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_pfarea_avg, 0)), \
+
+                    'totalrain_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrain_avg, 0)), \
+                    'totalrainheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrainheavy_avg, 0)), \
+                    'rainrateheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_rainrateheavy_avg, 0)), \
+                    'rainratemax_mean': (['time', 'lat', 'lon'], np.expand_dims(map_rainratemax_avg, 0)), \
+
                     'initiation_ccs': (['time', 'lat', 'lon'], np.expand_dims(map_init_ccs, 0)), \
 #                     'initiation_pf': (['time', 'lat', 'lon'], np.expand_dims(map_init_pf, 0)), \
 #                     'genesis_ccs': (['time', 'lat', 'lon'], np.expand_dims(map_genesis_ccs, 0)), \
@@ -258,7 +310,7 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                             'percentiles': (['percentiles'], percentiles), \
                             'time': (['time'], months), \
                             }, \
-                    attrs={'title': 'MCS monthly statistics map', \
+                    attrs={'title': 'MCS daily statistics map', \
                            'total_number_of_times': nframes, \
                            'contact': 'Zhe Feng, zhe.feng@pnnl.gov', \
                            'created_on': time.ctime(time.time())})
@@ -297,6 +349,18 @@ dsmap.ccs_area_mean.attrs['units'] = 'km2'
 
 dsmap.pf_area_mean.attrs['long_name'] = 'MCS precipitation feature area mean'
 dsmap.pf_area_mean.attrs['units'] = 'km2'
+
+dsmap.totalrain_mean.attrs['long_name'] = 'MCS total precipitation mean'
+dsmap.totalrain_mean.attrs['units'] = 'mm'
+
+dsmap.totalrainheavy_mean.attrs['long_name'] = 'MCS total heavy precipitation (rain rate > 10 mm/h) mean'
+dsmap.totalrainheavy_mean.attrs['units'] = 'mm'
+
+dsmap.rainrateheavy_mean.attrs['long_name'] = 'MCS heavy rain rate (rain rate > 10 mm/h) mean'
+dsmap.rainrateheavy_mean.attrs['units'] = 'mm/h'
+
+dsmap.rainratemax_mean.attrs['long_name'] = 'MCS max rain rate mean'
+dsmap.rainratemax_mean.attrs['units'] = 'mm/h'
 
 dsmap.initiation_ccs.attrs['long_name'] = 'MCS convective initiation hours defined by cold cloud shield'
 dsmap.initiation_ccs.attrs['units'] = 'hour'

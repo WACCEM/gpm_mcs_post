@@ -21,7 +21,8 @@ map_outfile = f'{outdir}merg_monthly_validcount_{year}{month}.nc'
 
 
 # Read data
-ds = xr.open_mfdataset(datafiles, concat_dim='time', combine='by_coords')
+# ds = xr.open_mfdataset(datafiles, concat_dim='time', combine='by_coords')
+ds = xr.open_mfdataset(datafiles, concat_dim='time', combine='nested')
 
 # Total number of times
 ntimes = ds.dims['time']
