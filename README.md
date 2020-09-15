@@ -53,7 +53,7 @@
 	Calculate daily mean MCS statistics from robust MCS statistics files and maps onto the native pixel grid.
 	The "_nospeed" version excludes propagation speed variables, useful for data files before advection speed step is run.
 	For large regions with lots of MCS (e.g. Asia, SPac) , directly calculating monthly mean statistics would take too long to run.
-	This approach calculates daily mean statistics and saves to daily netCDF files, which are much faster to run with more parallization. The daily output netCDF files can be further averaged to monthly files.
+	This approach calculates daily mean statistics and saves to daily netCDF files, which are much faster to run with more paralleliztion. The daily output netCDF files can be further averaged to monthly files.
 
 *  Calculate monthly mean MCS statistics:
 	- *map_imerg_mcs_stats_bymonth.py*
