@@ -201,7 +201,7 @@ dsmap = xr.Dataset({'mcs_number': (['month', 'lat', 'lon'], mcs_number_pf_month)
                     'mcs_freq_pf': (['month', 'lat', 'lon'], mcs_freq_pf_month), \
                     'mcs_pfarea': (['month', 'lat', 'lon'], mcs_pfarea_avg_month), \
                     'mcs_pfdiameter': (['month', 'lat', 'lon'], mcs_pfdiam_avg_month), \
-                    'mcs_lifetime': (['season', 'lat', 'lon'], mcs_lifetime_avg_month), \
+                    'mcs_lifetime': (['month', 'lat', 'lon'], mcs_lifetime_avg_month), \
                 #     'mcs_speed': (['month', 'lat', 'lon'], pfspeed_mcs_avg_month), \
                 #     'mcs_uspeed': (['month', 'lat', 'lon'], pfuspeed_mcs_avg_month), \
                 #     'mcs_vspeed': (['month', 'lat', 'lon'], pfvspeed_mcs_avg_month), \

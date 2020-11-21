@@ -139,7 +139,7 @@ dsmap = xr.Dataset({'precipitation': (['month', 'lat', 'lon'], totpcp_month), \
                     'mcs_precipitation': (['month', 'lat', 'lon'], mcspcp_month), \
                     'mcs_precipitation_frac': (['month', 'lat', 'lon'], mcsfrac_month), \
                     'mcs_precipitation_freq': (['month', 'lat', 'lon'], mcspcpfreq_month), \
-                    'mcs_precipitation_intensity': (['season', 'lat', 'lon'], mcspcpintensity_month), \
+                    'mcs_precipitation_intensity': (['month', 'lat', 'lon'], mcspcpintensity_month), \
                     }, \
                     coords={'month': (['month'], totpcp_month.month), \
                             'lat': (['lat'], ds.lat), \

@@ -88,22 +88,29 @@ def sort_renumber(labelcell_number2d, min_cellpix):
     return sortedlabelcell_number2d, sortedcell_npix
 
 
-def calc_pfstats_singlefile(pixel_filename, pixel_filebase, rmcs_basetime, rr_min, pf_min_npix, pixel_radius, nmaxpf):
+def calc_pfstats_singlefile(
+    pixel_filename, 
+    pixel_filebase, 
+    idx_track,
+    rr_min, 
+    pf_min_npix, 
+    pixel_radius, 
+    nmaxpf,
+    landmask_file, 
+    landfrac_thresh
+    ):
+
+    # Read landmask file
+    dslm = xr.open_dataset(landmask_file)
+    landmask = dslm['landseamask'].values
 
     pixelfile_path = os.path.dirname(pixel_filename)
-    prelength = len(pixelfile_path)+1 + len(pixel_filebase)
-    ittdatetimestring = pixel_filename[prelength:(prelength+13)]
-
-    
+    # prelength = len(pixelfile_path)+1 + len(pixel_filebase)
+    # ittdatetimestring = pixel_filename[prelength:(prelength+13)]
 
     # Read pixel data file
     if os.path.isfile(pixel_filename):
         print(pixel_filename)
-        # cloudiddata = Dataset(pixel_filename, 'r')
-        # cloudid_basetime = cloudiddata['base_time'][:]
-        # cloudnumbermap = cloudiddata['cloudtracknumber'][:]
-        # rawrainratemap = cloudiddata['precipitation'][:]
-        # cloudiddata.close()
 
         # Read pixel-level data
         ds = xr.open_dataset(pixel_filename, decode_times=False)
@@ -116,24 +123,25 @@ def calc_pfstats_singlefile(pixel_filename, pixel_filebase, rmcs_basetime, rr_mi
         ydim = ds.dims['lat']
         ds.close()
 
-        # Find all matching time indices from robust MCS stats file to the pixel file
-        matchindices = np.array(np.where(np.abs(rmcs_basetime - cloudid_basetime) < 1))
-        # The returned match indices are for [tracks, times] dimensions respectively
-        idx_track = matchindices[0]
-        idx_time = matchindices[1]
+        # # Find all matching time indices from robust MCS stats file to the pixel file
+        # matchindices = np.array(np.where(np.abs(rmcs_basetime - cloudid_basetime) < 1))
+        # # The returned match indices are for [tracks, times] dimensions respectively
+        # idx_track = matchindices[0]
+        # idx_time = matchindices[1]
 
+        # Create arrays for PF statistics
         nmatchcloud = len(idx_track)
-
-        if (nmatchcloud > 0):
-            # Create arrays for PF statistics
-            pf_npf = np.full(nmatchcloud, -999, dtype=int)
-            pf_pfnpix = np.full((nmatchcloud, nmaxpf), -999, dtype=int)
-            pf_pflon = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
-            pf_pflat = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
-            pf_maxrate = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
+        pf_npf = np.full(nmatchcloud, -999, dtype=int)
+        pf_landfrac = np.full((nmatchcloud), np.nan, dtype=float)
+        # pf_pfnpix = np.full((nmatchcloud, nmaxpf), -999, dtype=int)
+        # pf_pflon = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
+        # pf_pflat = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
+        # pf_maxrate = np.full((nmatchcloud, nmaxpf), np.nan, dtype=float)
+        
+        if (nmatchcloud > 0):          
 
             # Generate a dilation structure. This grows one pixel as a cross
-            dilationstructure = generate_binary_structure(2,1)  
+            # dilationstructure = generate_binary_structure(2,1)
 
             for imatchcloud in range(nmatchcloud):
                 # Intialize array for only MCS data
@@ -149,108 +157,132 @@ def calc_pfstats_singlefile(pixel_filename, pixel_filebase, rmcs_basetime, rr_mi
                 icloudlocationy, icloudlocationx = np.where(cloudnumbermap == itracknum)
                 inpix_cloud = len(icloudlocationy)
 
-                # Fill array with MCS data
-                filteredrainratemap[icloudlocationy, icloudlocationx] = np.copy(rawrainratemap[icloudlocationy,icloudlocationx])
+                if inpix_cloud > 0:
+                    # Fill array with MCS data
+                    filteredrainratemap[icloudlocationy, icloudlocationx] = np.copy(rawrainratemap[icloudlocationy,icloudlocationx])
 
-                ## Set edges of boundary
-                miny = np.nanmin(icloudlocationy)
-                if miny <= 10:
-                    miny = 0
-                else:
-                    miny = miny - 10
+                    ## Set edges of boundary
+                    miny = np.nanmin(icloudlocationy)
+                    if miny <= 10:
+                        miny = 0
+                    else:
+                        miny = miny - 10
 
-                maxy = np.nanmax(icloudlocationy)
-                if maxy >= ydim - 10:
-                    maxy = ydim
-                else:
-                    maxy = maxy + 11
+                    maxy = np.nanmax(icloudlocationy)
+                    if maxy >= ydim - 10:
+                        maxy = ydim
+                    else:
+                        maxy = maxy + 11
 
-                minx = np.nanmin(icloudlocationx)
-                if minx <= 10:
-                    minx = 0
-                else:
-                    minx = minx - 10
+                    minx = np.nanmin(icloudlocationx)
+                    if minx <= 10:
+                        minx = 0
+                    else:
+                        minx = minx - 10
 
-                maxx = np.nanmax(icloudlocationx)
-                if maxx >= xdim - 10:
-                    maxx = xdim
-                else:
-                    maxx = maxx + 11
+                    maxx = np.nanmax(icloudlocationx)
+                    if maxx >= xdim - 10:
+                        maxx = xdim
+                    else:
+                        maxx = maxx + 11
 
-                ## Isolate smaller region around cloud shield
-                subrainratemap = np.copy(filteredrainratemap[miny:maxy, minx:maxx])
+                    ## Isolate smaller region around cloud shield
+                    subrainratemap = np.copy(filteredrainratemap[miny:maxy, minx:maxx])
 
-                # Get dimensions of subsetted region
-                subdimy, subdimx = np.shape(subrainratemap)
+                    # Get dimensions of subsetted region
+                    subdimy, subdimx = np.shape(subrainratemap)
 
-                # Derive precipitation feature statistics
-                # print('Calculating precipitation statistics')
-                ipfy, ipfx = np.where(subrainratemap > rr_min)
-                nrainpix = len(ipfy)
+                    # Derive precipitation feature statistics
+                    # print('Calculating precipitation statistics')
+                    ipfy, ipfx = np.where(subrainratemap > rr_min)
+                    nrainpix = len(ipfy)
+                    # import pdb; pdb.set_trace()
 
-                if nrainpix > 0:
-                    # Create binary map
-                    binarypfmap = subrainratemap > rr_min
+                    if nrainpix > 0:
+                        # Subset landmask to current cloud area
+                        sublandmask = landmask[miny:maxy, minx:maxx]
 
-                    # Dilate (aka smooth)
-                    # dilatedbinarypfmap = binary_dilation(binarypfmap, structure=dilationstructure, iterations=1).astype(filteredrainratemap.dtype)
+                        npix_land = np.count_nonzero(sublandmask[ipfy, ipfx] <= landfrac_thresh)
+                        if npix_land > 0:
+                            pf_landfrac[imatchcloud] = float(npix_land) / float(nrainpix)
+                        else:
+                            pf_landfrac[imatchcloud] = 0
+                        # import pdb; pdb.set_trace()
 
-                    # Label precipitation features
-                    # pfnumberlabelmap, numpf = label(dilatedbinarypfmap)
-                    pfnumberlabelmap, numpf = label(binarypfmap)
+                        # Create binary map
+                        binarypfmap = subrainratemap > rr_min
 
-                    # Sort and renumber PFs, and remove small PFs
-                    pf_number, pf_npix = sort_renumber(pfnumberlabelmap, pf_min_npix)
-                    # Update number of PFs after sorting and renumbering
-                    npf_new = np.nanmax(pf_number)
-                    numpf = npf_new
-                    pfnumberlabelmap = pf_number
-                    del pf_number, npf_new
+                        # Dilate (aka smooth)
+                        # dilatedbinarypfmap = binary_dilation(binarypfmap, structure=dilationstructure, iterations=1).astype(filteredrainratemap.dtype)
 
-                    if numpf > 0:
-                        npf_save = np.nanmin([nmaxpf, numpf])
-                        # print('PFs present, initializing matrices')
+                        # Label precipitation features
+                        # pfnumberlabelmap, numpf = label(dilatedbinarypfmap)
+                        pfnumberlabelmap, numpf = label(binarypfmap)
 
-                        # Initialize matrices
-                        pfnpix = np.zeros(npf_save, dtype=float)
-                        pflon = np.full(npf_save, np.nan, dtype=float)
-                        pflat = np.full(npf_save, np.nan, dtype=float)
-                        pfmaxrate = np.full(npf_save, np.nan, dtype=float)
+                        # Sort and renumber PFs, and remove small PFs
+                        pf_number, pf_npix = sort_renumber(pfnumberlabelmap, pf_min_npix)
+                        # Update number of PFs after sorting and renumbering
+                        npf_new = np.nanmax(pf_number)
+                        numpf = npf_new
+                        pfnumberlabelmap = pf_number
+                        del pf_number, npf_new
 
-                        # print('Looping through each feature to calculate statistics')
-                        print(('Number of PFs ' + str(numpf)))
-                        ###############################################
-                        # Loop through each feature
-                        for ipf in range(1, npf_save+1):
-                            # Find associated indices
-                            iipfy, iipfx = np.where(pfnumberlabelmap == ipf)
-                            niipfpix = len(iipfy)
-
-                            # Compare the size of the PF to make sure it matches with the sorted PF
-                            if (niipfpix != pf_npix[ipf-1]):
-                                sys.exit("pixel count not match")
-                            else:
-                                # Compute statistics
-
-                                # Basic statistics
-                                pfnpix[ipf-1] = np.copy(niipfpix)
-                                pflon[ipf-1] = np.nanmean(lat[iipfy[:]+miny, iipfx[:]+minx])
-                                pflat[ipf-1] = np.nanmean(lon[iipfy[:]+miny, iipfx[:]+minx])
-
-                                pfmaxrate[ipf-1] = np.nanmax(subrainratemap[iipfy[:], iipfx[:]])
-                        
-                        # Save precipitation feature statisitcs
                         pf_npf[imatchcloud] = np.copy(numpf)
-                        pf_pflon[imatchcloud, 0:npf_save]= pflon[0:npf_save]
-                        pf_pflat[imatchcloud, 0:npf_save] = pflat[0:npf_save]
-                        pf_pfnpix[imatchcloud, 0:npf_save] = pfnpix[0:npf_save]
-                        pf_maxrate[imatchcloud, 0:npf_save] = pfmaxrate[0:npf_save]
 
-                        # print(imatchcloud, inpix_cloud)
+                        # if numpf > 0:
+                        #     npf_save = np.nanmin([nmaxpf, numpf])
+                        #     # print('PFs present, initializing matrices')
 
-            # if (nmatchcloud > 1) & (inpix_cloud > 2000):
-            import pdb; pdb.set_trace()
+                        #     # Initialize matrices
+                        #     pfnpix = np.zeros(npf_save, dtype=float)
+                        #     pflon = np.full(npf_save, np.nan, dtype=float)
+                        #     pflat = np.full(npf_save, np.nan, dtype=float)
+                        #     pfmaxrate = np.full(npf_save, np.nan, dtype=float)
 
-        # import pdb; pdb.set_trace()
+                        #     # print('Looping through each feature to calculate statistics')
+                        #     # print(('Number of PFs ' + str(numpf)))
+                        #     ###############################################
+                        #     # Loop through each feature
+                        #     for ipf in range(1, npf_save+1):
+                        #         # Find associated indices
+                        #         iipfy, iipfx = np.where(pfnumberlabelmap == ipf)
+                        #         niipfpix = len(iipfy)
 
-    return nmatchcloud, matchindices, pf_npf, pf_pflon, pf_pflat, pf_pfnpix, 
+                        #         # Compare the size of the PF to make sure it matches with the sorted PF
+                        #         if (niipfpix != pf_npix[ipf-1]):
+                        #             sys.exit("pixel count not match")
+                        #         else:
+                        #             # Compute statistics
+
+                        #             # Basic statistics
+                        #             pfnpix[ipf-1] = np.copy(niipfpix)
+                        #             pflon[ipf-1] = np.nanmean(lat[iipfy[:]+miny, iipfx[:]+minx])
+                        #             pflat[ipf-1] = np.nanmean(lon[iipfy[:]+miny, iipfx[:]+minx])
+
+                        #             pfmaxrate[ipf-1] = np.nanmax(subrainratemap[iipfy[:], iipfx[:]])
+                            
+                            # Save precipitation feature statisitcs
+                            # pf_npf[imatchcloud] = np.copy(numpf)
+                            # pf_pflon[imatchcloud, 0:npf_save]= pflon[0:npf_save]
+                            # pf_pflat[imatchcloud, 0:npf_save] = pflat[0:npf_save]
+                            # pf_pfnpix[imatchcloud, 0:npf_save] = pfnpix[0:npf_save]
+                            # pf_maxrate[imatchcloud, 0:npf_save] = pfmaxrate[0:npf_save]
+
+                            # print(imatchcloud, inpix_cloud)
+
+                else:
+                    print(f'No cloud matching track # {itracknum}')
+
+                # if (nmatchcloud > 1) & (inpix_cloud > 2000):
+                # import pdb; pdb.set_trace()
+
+            # import pdb; pdb.set_trace()
+
+    return (
+        pf_npf, 
+        pf_landfrac, 
+        # pf_pflon, 
+        # pf_pflat, 
+        # pf_pfnpix, 
+        # pf_maxrate, 
+        )

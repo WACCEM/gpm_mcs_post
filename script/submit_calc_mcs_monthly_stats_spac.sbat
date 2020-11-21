@@ -2,7 +2,7 @@
 #SBATCH -A m1867
 #SBATCH --job-name=mapspac
 #SBATCH --qos=debug
-#SBATCH --nodes=4
+#SBATCH --nodes=8
 #SBATCH --cpus-per-task=64
 #SBATCH --constraint=haswell
 #SBATCH --time=00:20:00
@@ -14,6 +14,5 @@
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
 export THREADS=24
-cd /global/homes/f/feng045/program/gpm_mcs_post/script
 runcommands.sh processlist_calc_mcs_monthly_stats_spac
 date

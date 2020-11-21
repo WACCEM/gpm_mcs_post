@@ -1,19 +1,19 @@
 #!/bin/bash
 #SBATCH -A m1867
-#SBATCH --job-name=mapnam
-##SBATCH --qos=regular
-#SBATCH --qos=debug
-#SBATCH --nodes=8
+#SBATCH --job-name=mapasia2
+#SBATCH --qos=regular
+##SBATCH --qos=debug
+#SBATCH --nodes=41
 #SBATCH --cpus-per-task=64
 #SBATCH --constraint=haswell
-#SBATCH --time=0:10:00
+#SBATCH --time=1:00:00
 #SBATCH --exclusive
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov
 #SBATCH --mail-type=END
-#SBATCH --output=log_map_mcs_stats_nam.out
+#SBATCH --output=log_map_mcs_stats_daily_asia2.out
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
 export THREADS=32
-runcommands.sh processlist_map_mcs_stats_daily_nam
+runcommands.sh processlist_map_mcs_stats_daily_asia_2006_2010
 date
