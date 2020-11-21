@@ -1,10 +1,10 @@
 #!/bin/bash
 
-startyear=2000
-endyear=2019
+startyear=2008
+endyear=2012
 # region="asia"
-# region="spac"
-region="nam"
+region="spac"
+# region="nam"
 
 # Loop over each year
 for iyear in $(seq $startyear $endyear); do
