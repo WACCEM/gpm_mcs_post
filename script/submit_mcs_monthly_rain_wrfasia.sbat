@@ -5,7 +5,7 @@
 #SBATCH --nodes=2
 #SBATCH --cpus-per-task=64
 #SBATCH -C haswell
-#SBATCH --time=00:10:00
+#SBATCH --time=00:15:00
 #SBATCH --exclusive
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov

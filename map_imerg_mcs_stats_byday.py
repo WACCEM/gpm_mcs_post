@@ -52,7 +52,8 @@ region = sys.argv[6]
 #month = 10
 
 stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
-pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
+#pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
+pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
 # stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/robust/filtered/'
 # pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_pt1/'
 
