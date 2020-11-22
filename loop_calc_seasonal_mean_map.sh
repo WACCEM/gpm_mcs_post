@@ -8,10 +8,7 @@
 conda activate /global/homes/f/feng045/envs/p37
 
 ## declare an array containing region names
-#declare -a regions=("asia" "sio" "europe" "africa" "nam" "sam" "npac" "spac")
-#declare -a regions=("apac" "afcsam" "eunam" "npac" "spac")
-#declare -a regions=("apac" "afcsam" "eunam" "npac" "spac")
-declare -a regions=("asia")
+declare -a regions=("asia" "spac" "nam")
 
 ## now loop through the list of regions
 for ireg in "${regions[@]}"; do
