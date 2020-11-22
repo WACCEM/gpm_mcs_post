@@ -15,8 +15,8 @@ if __name__ == "__main__":
     # region = 'asia'
     
     # Set up dask workers and threads
-    n_workers = 32
-    threads_per_worker = 2
+    n_workers = 30
+    threads_per_worker = 1
 
     startdate = f'{year}0101'
     enddate = f'{year}1231'
