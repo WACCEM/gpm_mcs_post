@@ -9,29 +9,26 @@ edate = sys.argv[2]
 year = (sys.argv[3])
 month = (sys.argv[4]).zfill(2)
 region = sys.argv[5]
+startlat = float(sys.argv[6])
+endlat = float(sys.argv[7])
+startlon = float(sys.argv[8])
+endlon = float(sys.argv[9])
 
-# mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/mcstracking/{sdate}_{edate}/'
-# outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/stats/monthly/'
-mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
+mcsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
+# outdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region{region}/stats_ccs4_4h/monthly/'
+# mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
 outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
-#mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/mcstracking/{sdate}_{edate}/'
-#outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats/monthly/'
-#mcsdir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/sattracking/{sdate}_{edate}/'
-#outdir = f'/global/cscratch1/sd/feng045/waccem/mcs_global/{region}/stats/monthly_satmcs/'
+
 mcsfiles = sorted(glob.glob(mcsdir + 'mcstrack_' + year + month + '??_????.nc'))
 print(mcsdir)
 print(year, month)
 print('Number of files: ', len(mcsfiles))
 os.makedirs(outdir, exist_ok=True)
 
-startlat = 31.0
-endlat = 48.0
-
 hov_outfile = outdir + 'mcs_rainhov_' + year + month + '.nc'
 
 # Read data
 ds = xr.open_mfdataset(mcsfiles, concat_dim='time', combine='nested', drop_variables=['numclouds','tb'])
-#ds.load()
 print('Finish reading input files.')
 
 
@@ -44,11 +41,12 @@ mcspcp = xr.DataArray(mcspreciptmp, coords={'time':ds.time, 'lat':ds.lat, 'lon':
 
 
 # Select a latitude band and time period
-mcspreciphov = mcspcp.sel(lat=slice(startlat, endlat)).mean(dim='lat')
-totpreciphov = ds['precipitation'].sel(lat=slice(startlat, endlat)).mean(dim='lat')
+mcspreciphov = mcspcp.sel(lat=slice(startlat, endlat), lon=slice(startlon, endlon)).mean(dim='lat')
+totpreciphov = ds['precipitation'].sel(lat=slice(startlat, endlat), lon=slice(startlon, endlon)).mean(dim='lat')
 
 # Select time slice matching the chunk
 timehov = ds['time']
+lonhov = ds.lon.sel(lon=slice(startlon, endlon))
 
 # Convert xarray decoded time back to Epoch Time in seconds
 basetime = np.array([tt.tolist()/1e9 for tt in ds.time.values])
@@ -58,7 +56,7 @@ basetime = np.array([tt.tolist()/1e9 for tt in ds.time.values])
 print('Writing Hovmoller to netCDF file ...')
 dshov = xr.Dataset({'precipitation': (['time', 'lon'], totpreciphov), \
                     'mcs_precipitation': (['time', 'lon'], mcspreciphov)}, \
-                    coords={'lon': (['lon'], ds.lon), \
+                    coords={'lon': (['lon'], lonhov), \
                             'time': (['time'], basetime)}, \
                     attrs={'title': 'MCS precipitation Hovmoller', \
                            'startlat':startlat, \
