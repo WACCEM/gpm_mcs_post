@@ -99,22 +99,22 @@ print('Number of MCS: ', nmcs)
 trackidx = np.array(trackidx.values).astype(int)
 
 # Subset variables to tracks in the current month
-base_time = stats.base_time.isel(tracks=trackidx).load()
-lifetime = (stats.length.isel(tracks=trackidx) * stats.time_resolution_hour).load()
-tracks = stats.tracks.isel(tracks=trackidx).load()
-ccs_area = stats.ccs_area.isel(tracks=trackidx).load()
-pf_area = stats.pf_area.isel(tracks=trackidx, nmaxpf=0).load()
-# mcs_status = stats.pf_mcsstatus.isel(tracks=trackidx).load()
-starttrackresult = stats.starttrackresult.isel(tracks=trackidx).load()
-pf_maxrainrate = stats.pf_maxrainrate.isel(tracks=trackidx).load()
-total_rain = stats.total_rain.isel(tracks=trackidx).load()
-total_heavyrain = stats.total_heavyrain.isel(tracks=trackidx).load()
-rainrate_heavyrain = stats.rainrate_heavyrain.isel(tracks=trackidx).load()
-# cloudnumber = stats.cloudnumber.isel(tracks=trackidx)
-# speed = stats.movement_r_meters_per_second.isel(tracks=trackidx).load()
+base_time = stats.base_time.sel(tracks=trackidx).load()
+lifetime = (stats.length.sel(tracks=trackidx) * stats.time_resolution_hour).load()
+tracks = stats.tracks.sel(tracks=trackidx).load()
+ccs_area = stats.ccs_area.sel(tracks=trackidx).load()
+pf_area = stats.pf_area.sel(tracks=trackidx, nmaxpf=0).load()
+# mcs_status = stats.pf_mcsstatus.sel(tracks=trackidx).load()
+starttrackresult = stats.starttrackresult.sel(tracks=trackidx).load()
+pf_maxrainrate = stats.pf_maxrainrate.sel(tracks=trackidx).load()
+total_rain = stats.total_rain.sel(tracks=trackidx).load()
+total_heavyrain = stats.total_heavyrain.sel(tracks=trackidx).load()
+rainrate_heavyrain = stats.rainrate_heavyrain.sel(tracks=trackidx).load()
+# cloudnumber = stats.cloudnumber.sel(tracks=trackidx)
+# speed = stats.movement_r_meters_per_second.sel(tracks=trackidx).load()
 # # movement_x and movement_y are in [km]/timestep, divide by 3.6 (1000m/3600s) to convert to [m/s]
-# uspeed = (stats.movement_storm_x.isel(tracks=trackidx)/3.6).load()
-# vspeed = (stats.movement_storm_y.isel(tracks=trackidx)/3.6).load()
+# uspeed = (stats.movement_storm_x.sel(tracks=trackidx)/3.6).load()
+# vspeed = (stats.movement_storm_y.sel(tracks=trackidx)/3.6).load()
 
 
 # Convert datetime64 (when reading base_time from netCDF) to epoch time
@@ -136,6 +136,7 @@ map_rainrateheavy = np.zeros((ny, nx))
 map_rainratemax = np.zeros((ny, nx))
 map_totalrainheavy = np.zeros((ny, nx))
 map_totalrain = np.zeros((ny, nx))
+map_mcsrain = np.zeros((ny, nx))
 map_nhour_ccs = np.zeros((ny, nx))
 map_nhour_pf = np.zeros((ny, nx))
 map_nmcs_ccs = np.zeros((ny, nx))
@@ -180,9 +181,8 @@ for imcs in range(nmcs):
             ds = Dataset(pixfname)
             cloudtracknumber = ds.variables['cloudtracknumber'][0,:,:]
             pcptracknumber = ds.variables['pcptracknumber'][0,:,:]
-#             fcloudnumber = ds.variables['cloudnumber'][0,:,:]
+            precipitation = ds.variables['precipitation'][0,:,:]
             # Find cloudnumber matching the current one
-#             idx_c = np.where(fcloudnumber == icn)
             idx_c = np.where(cloudtracknumber == itrack)
             idx_p = np.where(pcptracknumber == itrack)
             # Check the number of pixels found for this track
@@ -204,6 +204,7 @@ for imcs in range(nmcs):
             # Put stats value onto the map
             temp_c = np.zeros((ny, nx))*np.NAN
             temp_p = np.zeros((ny, nx))*np.NAN
+            temp_mcsrain = np.zeros((ny, nx))
             temp_totalrain = np.full((ny, nx), np.NAN)
             temp_totalrainheavy = np.full((ny, nx), np.NAN)
             temp_rainrateheavy = np.full((ny, nx), np.NAN)
@@ -214,6 +215,11 @@ for imcs in range(nmcs):
 
             temp_c[idx_c] = iccsarea
             temp_p[idx_p] = ipfarea
+            temp_mcsrain[idx_c] = precipitation[idx_c]
+
+            # Assign single PF value to the entire PF mask
+            # This is to increase area for certain extreme statistics (e.g. max rain rate)
+            # to make results less noisy. Absolute location wise this is just an approximation.
             temp_totalrain[idx_p] = itotalrain
             temp_totalrainheavy[idx_p] = iheavyrain
             temp_rainrateheavy[idx_p] = irainrateheavy
@@ -233,11 +239,13 @@ for imcs in range(nmcs):
             temp_map_totalrainheavy = np.copy(map_totalrainheavy)
             temp_map_rainrateheavy = np.copy(map_rainrateheavy)
             temp_map_rainratemax = np.copy(map_rainratemax)
+            temp_map_mcsrain = np.copy(map_mcsrain)
 
             # Stack two arrays and use nansum, then save it back to output array
             map_ccsarea[:,:] = np.nansum(np.dstack((temp_map_ccsarea, temp_c)), axis=2)
             map_pfarea[:,:] = np.nansum(np.dstack((temp_map_pfarea, temp_p)), axis=2)
 
+            map_mcsrain[:,:] = np.nansum(np.dstack((temp_map_mcsrain, temp_mcsrain)), axis=2)
             map_totalrain[:,:] = np.nansum(np.dstack((temp_map_totalrain, temp_totalrain)), axis=2)
             map_totalrainheavy[:,:] = np.nansum(np.dstack((temp_map_totalrainheavy, temp_totalrainheavy)), axis=2)
             map_rainrateheavy[:,:] = np.nansum(np.dstack((temp_map_rainrateheavy, temp_rainrateheavy)), axis=2)
@@ -293,6 +301,7 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                     'ccs_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_ccsarea_avg, 0)),  \
                     'pf_area_mean': (['time', 'lat', 'lon'], np.expand_dims(map_pfarea_avg, 0)), \
 
+                    'mcs_rain_amount': (['time', 'lat', 'lon'], np.expand_dims(map_mcsrain, 0)), \
                     'totalrain_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrain_avg, 0)), \
                     'totalrainheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_totalrainheavy_avg, 0)), \
                     'rainrateheavy_mean': (['time', 'lat', 'lon'], np.expand_dims(map_rainrateheavy_avg, 0)), \
@@ -349,6 +358,9 @@ dsmap.ccs_area_mean.attrs['units'] = 'km2'
 
 dsmap.pf_area_mean.attrs['long_name'] = 'MCS precipitation feature area mean'
 dsmap.pf_area_mean.attrs['units'] = 'km2'
+
+dsmap.mcs_rain_amount.attrs['long_name'] = 'MCS accumulated precipitation from all MCS initiated within the day'
+dsmap.mcs_rain_amount.attrs['units'] = 'mm'
 
 dsmap.totalrain_mean.attrs['long_name'] = 'MCS total precipitation mean'
 dsmap.totalrain_mean.attrs['units'] = 'mm'
