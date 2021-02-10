@@ -20,16 +20,36 @@ if __name__ == "__main__":
     ntimes = ds.dims['time']
 
     # Simple mean
-    pcp_avg = ds.precipitation.mean(dim='time').load()
+    pcp_avg = ds['precipitation'].mean(dim='time').load()
+    pcp_avg_ne = ds['precipitation_ne'].mean(dim='time').load()
+    pcp_avg_se = ds['precipitation_se'].mean(dim='time').load()
+    pcp_avg_sw = ds['precipitation_sw'].mean(dim='time').load()
+    pcp_avg_nw = ds['precipitation_nw'].mean(dim='time').load()
 
     # Rechunk time dimension for dask parallel computation
-    pcp = ds.precipitation.chunk({'time': -1})
+    pcp = ds['precipitation'].chunk({'time': -1})
+    pcp_ne = ds['precipitation_ne'].where(~np.isnan(ds['time_ne']), drop=True).chunk({'time': -1})
+    pcp_se = ds['precipitation_se'].where(~np.isnan(ds['time_se']), drop=True).chunk({'time': -1})
+    pcp_sw = ds['precipitation_sw'].where(~np.isnan(ds['time_sw']), drop=True).chunk({'time': -1})
+    pcp_nw = ds['precipitation_nw'].where(~np.isnan(ds['time_nw']), drop=True).chunk({'time': -1})
     quantile = [0.5, 0.9, 0.95, 0.99]
     pcp_percentiles = pcp.quantile(quantile, dim='time', keep_attrs=True).load()
+    pcp_percentiles_ne = pcp_ne.quantile(quantile, dim='time', keep_attrs=True).load()
+    pcp_percentiles_se = pcp_se.quantile(quantile, dim='time', keep_attrs=True).load()
+    pcp_percentiles_sw = pcp_sw.quantile(quantile, dim='time', keep_attrs=True).load()
+    pcp_percentiles_nw = pcp_nw.quantile(quantile, dim='time', keep_attrs=True).load()
 
     # Define xarray dataset for output
     dsout = xr.Dataset({'pcp_mean': (['y', 'x'], pcp_avg), \
+                        'pcp_mean_ne': (['y', 'x'], pcp_avg_ne), \
+                        'pcp_mean_se': (['y', 'x'], pcp_avg_se), \
+                        'pcp_mean_sw': (['y', 'x'], pcp_avg_sw), \
+                        'pcp_mean_nw': (['y', 'x'], pcp_avg_nw), \
                         'pcp_quantile': (['quantile','y', 'x'], pcp_percentiles), \
+                        'pcp_quantile_ne': (['quantile','y', 'x'], pcp_percentiles_ne), \
+                        'pcp_quantile_se': (['quantile','y', 'x'], pcp_percentiles_se), \
+                        'pcp_quantile_sw': (['quantile','y', 'x'], pcp_percentiles_sw), \
+                        'pcp_quantile_nw': (['quantile','y', 'x'], pcp_percentiles_nw), \
                         }, \
                         coords={'y': (['y'], ds.y), \
                                 'x': (['x'], ds.x), \
@@ -49,11 +69,35 @@ if __name__ == "__main__":
     dsout['pcp_mean'].attrs['long_name'] = 'Mean precipitation'
     dsout['pcp_mean'].attrs['units'] = 'mm/h'
 
+    dsout['pcp_mean_ne'].attrs['long_name'] = 'Mean precipitation (Northeast moving)'
+    dsout['pcp_mean_ne'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_mean_se'].attrs['long_name'] = 'Mean precipitation (Southeast moving)'
+    dsout['pcp_mean_se'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_mean_sw'].attrs['long_name'] = 'Mean precipitation (Southwest moving)'
+    dsout['pcp_mean_sw'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_mean_nw'].attrs['long_name'] = 'Mean precipitation (Northwest moving)'
+    dsout['pcp_mean_nw'].attrs['units'] = 'mm/h'
+
     dsout['pcp_quantile'].attrs['long_name'] = 'Precipitation quantiles'
     dsout['pcp_quantile'].attrs['units'] = 'mm/h'
 
+    dsout['pcp_quantile_ne'].attrs['long_name'] = 'Precipitation quantiles (Northeast moving)'
+    dsout['pcp_quantile_ne'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_quantile_se'].attrs['long_name'] = 'Precipitation quantiles (Southeast moving)'
+    dsout['pcp_quantile_se'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_quantile_sw'].attrs['long_name'] = 'Precipitation quantiles (Southwest moving)'
+    dsout['pcp_quantile_sw'].attrs['units'] = 'mm/h'
+
+    dsout['pcp_quantile_nw'].attrs['long_name'] = 'Precipitation quantiles (Northwest moving)'
+    dsout['pcp_quantile_nw'].attrs['units'] = 'mm/h'
+
     # Set encoding/compression for all variables
-    comp = dict(zlib=True)
+    comp = dict(zlib=True, dtype='float32')
     encoding = {var: comp for var in dsout.data_vars}
 
     # Write to netcdf file

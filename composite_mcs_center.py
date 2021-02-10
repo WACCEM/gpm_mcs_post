@@ -45,6 +45,8 @@ def composite_mcs_center(
     idx_track,
     pf_lon,
     pf_lat,
+    uspeed,
+    vspeed,
     nx,
     ny,
     ):
@@ -61,6 +63,10 @@ def composite_mcs_center(
         Longitudes of MCS PF center
     pf_lat: float array
         Latitudes of MCS PF center
+    uspeed: float array
+        MCS propagation speed in zonal direction
+    vspeed: float array
+        MCS propagation speed in meridional direction
     nx: int
         Number of grids in x-direction for the MCS window (x size: nx * 2 + 1)
     ny: int
@@ -71,6 +77,10 @@ def composite_mcs_center(
     nmatchcloud = len(idx_track)
     # npf_out = 0
     rain_out = np.full((nmatchcloud, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_ne = np.full((nmatchcloud, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_se = np.full((nmatchcloud, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_sw = np.full((nmatchcloud, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_nw = np.full((nmatchcloud, ny*2+1, nx*2+1), 0, dtype=np.float)
 
     # Read pixel data file
     if os.path.isfile(pixel_filename):
@@ -86,6 +96,11 @@ def composite_mcs_center(
         xdim = ds.dims['lon']
         ydim = ds.dims['lat']
         ds.close()
+
+        cloudid_basetime_ne = cloudid_basetime
+        cloudid_basetime_se = cloudid_basetime
+        cloudid_basetime_sw = cloudid_basetime
+        cloudid_basetime_nw = cloudid_basetime
 
         if (nmatchcloud > 0):
 
@@ -113,21 +128,67 @@ def composite_mcs_center(
                     # Save the MCS rain map
                     rain_out[imatchcloud, :, :] = rain_cut
                     # npf_out += 1
+
+                    # Separate by movement direction
+                    # Northeast: U >= 0, V >= 0
+                    if (uspeed[imatchcloud] >= 0) & (vspeed[imatchcloud] >= 0):
+                        rain_ne[imatchcloud, :, :] = rain_cut
+                    # Southeast: U >= 0, V < 0
+                    if (uspeed[imatchcloud] >= 0) & (vspeed[imatchcloud] < 0):
+                        rain_se[imatchcloud, :, :] = rain_cut
+                    # Southwest: U < 0, V < 0
+                    if (uspeed[imatchcloud] < 0) & (vspeed[imatchcloud] < 0):
+                        rain_sw[imatchcloud, :, :] = rain_cut
+                    # Northwest: U < 0, V >= 0
+                    if (uspeed[imatchcloud] < 0) & (vspeed[imatchcloud] >= 0):
+                        rain_nw[imatchcloud, :, :] = rain_cut
+
                 else:
                     print(f'Warning: no cloud matching track # {itracknum}')
                     # import pdb; pdb.set_trace()
 
     # Sum over space for each MCS
     rain_sum = np.sum(rain_out, axis=(1,2))
+    rain_ne_sum = np.sum(rain_ne, axis=(1,2))
+    rain_se_sum = np.sum(rain_se, axis=(1,2))
+    rain_sw_sum = np.sum(rain_sw, axis=(1,2))
+    rain_nw_sum = np.sum(rain_nw, axis=(1,2))
+    
     # Find the ones with non-zero rainfall
     idx_valid = np.where(rain_sum > 0)[0]
+    idx_valid_ne = np.where(rain_ne_sum > 0)[0]
+    idx_valid_se = np.where(rain_se_sum > 0)[0]
+    idx_valid_sw = np.where(rain_sw_sum > 0)[0]
+    idx_valid_nw = np.where(rain_nw_sum > 0)[0]
+
     # This is the number of valid MCS PF
     npf_out = len(idx_valid)
+    npf_ne = len(idx_valid_ne)
+    npf_se = len(idx_valid_se)
+    npf_sw = len(idx_valid_sw)
+    npf_nw = len(idx_valid_nw)
+
     rain_out = rain_out[idx_valid, :, :]
+    rain_ne = rain_ne[idx_valid_ne, :, :]
+    rain_se = rain_se[idx_valid_se, :, :]
+    rain_sw = rain_sw[idx_valid_sw, :, :]
+    rain_nw = rain_nw[idx_valid_nw, :, :]
 
     # If no valid MCS, replace output base time as NaN
     # This frame will be excluded before final output in the main function
     if npf_out == 0:
         cloudid_basetime = np.array(np.NaN)
+    if npf_ne == 0:
+        cloudid_basetime_ne = np.array(np.NaN)
+    if npf_se == 0:
+        cloudid_basetime_se = np.array(np.NaN)
+    if npf_sw == 0:
+        cloudid_basetime_sw = np.array(np.NaN)
+    if npf_nw == 0:
+        cloudid_basetime_nw = np.array(np.NaN)
 
-    return (rain_out, npf_out, cloudid_basetime)
+    return (rain_out, npf_out, cloudid_basetime, 
+            rain_ne, rain_se, rain_sw, rain_nw,
+            npf_ne, npf_se, npf_sw, npf_nw,
+            cloudid_basetime_ne, cloudid_basetime_se, cloudid_basetime_sw, cloudid_basetime_nw, 
+            )

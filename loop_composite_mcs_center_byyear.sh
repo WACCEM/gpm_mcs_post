@@ -4,8 +4,8 @@
 # The Python code uses Dask parallelization, so this script should be run in an exclusive interactive node
 conda activate /global/homes/f/feng045/envs/p37
 
-STARTYEAR=2004
-ENDYEAR=2014
+STARTYEAR=2000
+ENDYEAR=2019
 
 # Loop over each year
 for iyear in $(seq ${STARTYEAR} ${ENDYEAR}); do

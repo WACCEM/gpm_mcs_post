@@ -31,6 +31,7 @@ if __name__ == "__main__":
     # Output window size is 2 x window_size_km
     window_size_km = 700
     
+    run_parallel = 1
     # Set up dask workers and threads
     n_workers = 30
     threads_per_worker = 1
@@ -50,7 +51,8 @@ if __name__ == "__main__":
     # Input and output data directory
     stats_path = f'/global/cscratch1/sd/feng045/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
     pixelfile_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{startdate}_{enddate}/'
-    out_path = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/'
+    # out_path = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/'
+    out_path = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/mean_direction/'
     out_file = f'{out_path}mcs_center_composite_{d0}_{d1}.nc'
     
     mcsstats_filebase = 'robust_mcs_tracks_extc_'
@@ -110,6 +112,10 @@ if __name__ == "__main__":
     # Get the largest PF center lat/lon
     pf_lon = dsrobust['pf_lon'].isel(nmaxpf=0).values
     pf_lat = dsrobust['pf_lat'].isel(nmaxpf=0).values
+    uspeed = dsrobust['uspeed'].values
+    vspeed = dsrobust['vspeed'].values
+    uspeed_avg = dsrobust['uspeed'].mean(dim='times').values
+    vspeed_avg = dsrobust['vspeed'].mean(dim='times').values
     # print(f'Total Number of Tracks: {ntracks}')
 
     print(f'Total number of selected tracks: {len(tracknumbers)}')
@@ -132,49 +138,112 @@ if __name__ == "__main__":
     nx = np.ceil(window_size_km / pixel_radius).astype(int)
     ny = nx
     rain_save = np.full((npf_all, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_save_ne = np.full((npf_all, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_save_se = np.full((npf_all, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_save_sw = np.full((npf_all, ny*2+1, nx*2+1), 0, dtype=np.float)
+    rain_save_nw = np.full((npf_all, ny*2+1, nx*2+1), 0, dtype=np.float)
     basetime_save = np.full(npf_all, np.NaN, dtype=np.float32)
-
-    # Initialize dask
-    cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
-    client = Client(cluster)
+    basetime_save_ne = np.full(npf_all, np.NaN, dtype=np.float32)
+    basetime_save_se = np.full(npf_all, np.NaN, dtype=np.float32)
+    basetime_save_sw = np.full(npf_all, np.NaN, dtype=np.float32)
+    basetime_save_nw = np.full(npf_all, np.NaN, dtype=np.float32)
+    
 
     # Loop over subset files
     npf_save = 0
+    npf_save_ne = 0
+    npf_save_se = 0
+    npf_save_sw = 0
+    npf_save_nw = 0
     results = []
-    for ifile in range(nfiles):
-    # for ifile in range(60):
-        filename = pixelfilelist[ifile]
-        # print(pixelfile_basetime[ifile])
-        # Find all matching time indices from robust MCS stats file to the current pixel file
-        # and require the MCS status == 1 (MCS size threshold is reached)
-        # and must have a PF
-        matchindices = np.array(np.where( (np.abs(rmcs_basetime - pixelfile_basetime[ifile]) < 1) & 
-                                          (mcs_status == 1) & (~np.isnan(pf_lon)) ) )
-        # The returned match indices are for [tracks, times] dimensions respectively
-        idx_track = matchindices[0]
-        idx_time = matchindices[1]
-        nmatch = len(idx_track)
-        if (nmatch > 0):            
-            # Get the track numbers
-            itracknum = tracknumbers[idx_track]
-            # print(itracknum)
-            # Get the PF center lat/lon
-            ipflon = pf_lon[idx_track, idx_time]
-            ipflat = pf_lat[idx_track, idx_time]
+    final_result = []
 
-            # Call composite function
-            result = dask.delayed(composite_mcs_center)(
-                        filename,
-                        itracknum,
-                        ipflon,
-                        ipflat,
-                        nx,
-                        ny,
-                        )
-            results.append(result)
-    
-    # Trigger dask comptation
-    final_result = dask.compute(*results)
+    if run_parallel==0:
+
+        for ifile in range(nfiles):
+        # for ifile in range(60):
+            filename = pixelfilelist[ifile]
+            # Find all matching time indices from robust MCS stats file to the current pixel file
+            # and require the MCS status == 1 (MCS size threshold is reached)
+            # and must have a PF
+            matchindices = np.array(np.where( (np.abs(rmcs_basetime - pixelfile_basetime[ifile]) < 1) & 
+                                            (mcs_status == 1) & (~np.isnan(pf_lon)) ) )
+            # The returned match indices are for [tracks, times] dimensions respectively
+            idx_track = matchindices[0]
+            idx_time = matchindices[1]
+            nmatch = len(idx_track)
+            if (nmatch > 0):            
+                # Get the track numbers
+                itracknum = tracknumbers[idx_track]
+                # print(itracknum)
+                # Get the PF center lat/lon
+                ipflon = pf_lon[idx_track, idx_time]
+                ipflat = pf_lat[idx_track, idx_time]
+                # iuspeed = uspeed[idx_track, idx_time]
+                # ivspeed = vspeed[idx_track, idx_time]
+                iuspeed = uspeed_avg[idx_track]
+                ivspeed = vspeed_avg[idx_track]
+
+                # Call composite function
+                result = composite_mcs_center(
+                            filename,
+                            itracknum,
+                            ipflon,
+                            ipflat,
+                            iuspeed,
+                            ivspeed,
+                            nx,
+                            ny,
+                            )
+                final_result.append(result)
+
+    elif run_parallel==1:
+        print(f'Parallel version by dask')
+
+        # Initialize dask
+        cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
+        client = Client(cluster)
+
+        for ifile in range(nfiles):
+        # for ifile in range(60):
+            filename = pixelfilelist[ifile]
+            # print(pixelfile_basetime[ifile])
+            # Find all matching time indices from robust MCS stats file to the current pixel file
+            # and require the MCS status == 1 (MCS size threshold is reached)
+            # and must have a PF
+            matchindices = np.array(np.where( (np.abs(rmcs_basetime - pixelfile_basetime[ifile]) < 1) & 
+                                            (mcs_status == 1) & (~np.isnan(pf_lon)) ) )
+            # The returned match indices are for [tracks, times] dimensions respectively
+            idx_track = matchindices[0]
+            idx_time = matchindices[1]
+            nmatch = len(idx_track)
+            if (nmatch > 0):            
+                # Get the track numbers
+                itracknum = tracknumbers[idx_track]
+                # print(itracknum)
+                # Get the PF center lat/lon
+                ipflon = pf_lon[idx_track, idx_time]
+                ipflat = pf_lat[idx_track, idx_time]
+                # iuspeed = uspeed[idx_track, idx_time]
+                # ivspeed = vspeed[idx_track, idx_time]
+                iuspeed = uspeed_avg[idx_track]
+                ivspeed = vspeed_avg[idx_track]
+
+                # Call composite function
+                result = dask.delayed(composite_mcs_center)(
+                            filename,
+                            itracknum,
+                            ipflon,
+                            ipflat,
+                            iuspeed,
+                            ivspeed,
+                            nx,
+                            ny,
+                            )
+                results.append(result)
+        
+        # Trigger dask comptation
+        final_result = dask.compute(*results)
 
     # Get the number of returned items
     n_result = len(final_result)
@@ -188,6 +257,19 @@ if __name__ == "__main__":
             npf = tmp[1]
             bt = tmp[2]
 
+            rain_ne = tmp[3]
+            rain_se = tmp[4]
+            rain_sw = tmp[5]
+            rain_nw = tmp[6]
+            npf_ne = tmp[7]
+            npf_se = tmp[8]
+            npf_sw = tmp[9]
+            npf_nw = tmp[10]
+            bt_ne = tmp[11]
+            bt_se = tmp[12]
+            bt_sw = tmp[13]
+            bt_nw = tmp[14]
+
             # Save the rain cut field
             if npf > 0:
                 rain_save[npf_save:(npf_save+npf), :, :] = rain_cut
@@ -196,12 +278,49 @@ if __name__ == "__main__":
                 # Save base time for all returned PFs for this file
                 basetime_save[npf_save:(npf_save+npf)] = bt
 
+            if npf_ne > 0:
+                rain_save_ne[npf_save_ne:(npf_save_ne+npf_ne), :, :] = rain_ne
+                # Add number of PFs
+                npf_save_ne += npf_ne
+                # Save base time for all returned PFs for this file
+                basetime_save_ne[npf_save_ne:(npf_save_ne+npf_ne)] = bt_ne
+            if npf_se > 0:
+                rain_save_se[npf_save_se:(npf_save_se+npf_se), :, :] = rain_se
+                # Add number of PFs
+                npf_save_se += npf_se
+                # Save base time for all returned PFs for this file
+                basetime_save_se[npf_save_se:(npf_save_se+npf_se)] = bt_se
+            if npf_sw > 0:
+                rain_save_sw[npf_save_sw:(npf_save_sw+npf_sw), :, :] = rain_sw
+                # Add number of PFs
+                npf_save_sw += npf_sw
+                # Save base time for all returned PFs for this file
+                basetime_save_sw[npf_save_sw:(npf_save_sw+npf_sw)] = bt_sw
+            if npf_nw > 0:
+                rain_save_nw[npf_save_nw:(npf_save_nw+npf_nw), :, :] = rain_nw
+                # Add number of PFs
+                npf_save_nw += npf_nw
+                # Save base time for all returned PFs for this file
+                basetime_save_nw[npf_save_nw:(npf_save_nw+npf_nw)] = bt_nw
+
     # Find indices where base time is valid
     idx_valid = np.nonzero(~np.isnan(basetime_save))[0]
-    ntimes = len(idx_valid)
+    # idx_valid_ne = np.nonzero(~np.isnan(basetime_save_ne))[0]
+    # idx_valid_se = np.nonzero(~np.isnan(basetime_save_se))[0]
+    # idx_valid_sw = np.nonzero(~np.isnan(basetime_save_sw))[0]
+    # idx_valid_nw = np.nonzero(~np.isnan(basetime_save_nw))[0]
+    # ntimes = len(idx_valid)
     # Remove invalid times
     basetime_save = basetime_save[idx_valid]
+    basetime_save_ne = basetime_save_ne[idx_valid]
+    basetime_save_se = basetime_save_se[idx_valid]
+    basetime_save_sw = basetime_save_sw[idx_valid]
+    basetime_save_nw = basetime_save_nw[idx_valid]
     rain_save = rain_save[idx_valid, :, :]
+    rain_save_ne = rain_save_ne[idx_valid, :, :]
+    rain_save_se = rain_save_se[idx_valid, :, :]
+    rain_save_sw = rain_save_sw[idx_valid, :, :]
+    rain_save_nw = rain_save_nw[idx_valid, :, :]
 
     # Create x, y coordinates
     xcoord = (np.arange(nx*2+1)-nx) * pixel_radius
@@ -209,8 +328,16 @@ if __name__ == "__main__":
 
     # Define xarray dataset for output
     dsout = xr.Dataset({'precipitation': (['time', 'y', 'x'], rain_save), \
+                        'precipitation_ne': (['time', 'y', 'x'], rain_save_ne), \
+                        'precipitation_se': (['time', 'y', 'x'], rain_save_se), \
+                        'precipitation_sw': (['time', 'y', 'x'], rain_save_sw), \
+                        'precipitation_nw': (['time', 'y', 'x'], rain_save_nw), \
                         }, \
                         coords={'time': (['time'], basetime_save), \
+                                'time_ne': (['time'], basetime_save_ne), \
+                                'time_se': (['time'], basetime_save_se), \
+                                'time_sw': (['time'], basetime_save_sw), \
+                                'time_nw': (['time'], basetime_save_nw), \
                                 'y': (['y'], ycoord), \
                                 'x': (['x'], xcoord)}, \
                         attrs={'title': 'MCS PF-center composite', \
@@ -225,6 +352,11 @@ if __name__ == "__main__":
     dsout.time.attrs['long_name'] = 'Epoch Time (since 1970-01-01T00:00:00)'
     dsout.time.attrs['units'] = 'Seconds since 1970-1-1 0:00:00 0:00'
 
+    # dsout['time_ne'].attrs = dsout['time'].attrs
+    # dsout['time_se'].attrs = dsout['time'].attrs
+    # dsout['time_sw'].attrs = dsout['time'].attrs
+    # dsout['time_nw'].attrs = dsout['time'].attrs
+
     dsout.y.attrs['long_name'] = 'Relative y-distance from MCS PF center'
     dsout.y.attrs['units'] = 'km'
 
@@ -234,8 +366,20 @@ if __name__ == "__main__":
     dsout.precipitation.attrs['long_name'] = 'MCS precipitation'
     dsout.precipitation.attrs['units'] = 'mm/h'
 
+    dsout.precipitation_ne.attrs['long_name'] = 'MCS precipitation (Northeast moving)'
+    dsout.precipitation_ne.attrs['units'] = 'mm/h'
+
+    dsout.precipitation_se.attrs['long_name'] = 'MCS precipitation (Southeast moving)'
+    dsout.precipitation_se.attrs['units'] = 'mm/h'
+
+    dsout.precipitation_sw.attrs['long_name'] = 'MCS precipitation (Southwest moving)'
+    dsout.precipitation_sw.attrs['units'] = 'mm/h'
+
+    dsout.precipitation_nw.attrs['long_name'] = 'MCS precipitation (Northwest moving)'
+    dsout.precipitation_nw.attrs['units'] = 'mm/h'
+
     # Set encoding/compression for all variables
-    comp = dict(zlib=True)
+    comp = dict(zlib=True, dtype='float32')
     encoding = {var: comp for var in dsout.data_vars}
 
     # Write to netcdf file
