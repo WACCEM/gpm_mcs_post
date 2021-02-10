@@ -311,7 +311,8 @@ def combine_regions(sfile_asia, sfile_nam, sfile_spac, pfile_asia, pfile_nam, pf
 
 
 def main():
-    period = '2000_2019'
+    # period = '2000_2019'
+    period = '2001_2019'
     # period = '2014_2019'
 
     rootdir = '/global/cscratch1/sd/feng045/waccem/mcs_region/'

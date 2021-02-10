@@ -1,12 +1,11 @@
 #!/bin/bash
 #SBATCH -A m1867
 #SBATCH --job-name=irmiss
-##SBATCH -p debug
-#SBATCH -p regular
+#SBATCH -p debug
 #SBATCH --nodes=4
 #SBATCH --cpus-per-task=64
 #SBATCH -C haswell
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --exclusive
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov
@@ -15,6 +14,5 @@
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
 export THREADS=12
-cd /global/homes/f/feng045/program/gpm_mcs_post/script
 runcommands.sh processlist_mergir_missing
 date

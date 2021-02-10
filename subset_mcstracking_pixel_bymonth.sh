@@ -3,8 +3,8 @@
 # This script subsets the MCS tracking pixel-level files to a sub-region and put each month in a separate directory
 # Zhe Feng, 07/27/2020
 
-if [[ $# -ne 11 ]] ; then
-  echo 'Usage: subset_mcstracking_pixel_bymonth.sh region lon_min lon_max lat_min lat_max start_year end_year start_month end_month input_dir output_dir'
+if [[ $# -ne 10 ]] ; then
+  echo 'Usage: subset_mcstracking_pixel_bymonth.sh lon_min lon_max lat_min lat_max start_year end_year start_month end_month input_dir output_dir'
   exit 1
 fi
 
@@ -24,17 +24,16 @@ module load nco
 # outdir="/global/cscratch1/sd/feng045/waccem/mcs_region/${region}/subset_darwin/"
 
 # Get input arguments
-region=$1
-lonmin=$2
-lonmax=$3
-latmin=$4
-latmax=$5
-syear=$6
-eyear=$7
-smonth=$8
-emonth=$9
-indir=${10}
-outdir=${11}
+lonmin=$1
+lonmax=$2
+latmin=$3
+latmax=$4
+syear=$5
+eyear=$6
+smonth=$7
+emonth=$8
+indir=${09}
+outdir=${10}
 
 # Loop over year
 for iyear in $(seq $syear $eyear); do

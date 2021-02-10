@@ -13,17 +13,24 @@ import time, datetime, calendar, pytz
 region = sys.argv[1]
 #region = 'asia'
 
-mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
-#mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
-mcsfiles = sorted(glob.glob(f'{mcsdir}mcs_rainmap_20????*nc'))
-print(f'Number of files: {len(mcsfiles)}')
+input_years = [2001,2002,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019]
+
+datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
+#datadir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/monthly/'
+# pcpfiles = sorted(glob.glob(f'{datadir}mcs_rainmap_20????*nc'))
+# print(f'Number of files: {len(pcpfiles)}')
+
+pcpfiles = []
+for iyear in input_years:
+    pcpfiles.extend(sorted(glob.glob(f'{datadir}mcs_rainmap_{iyear}*nc')))
+print(f'Number of rainmap files: {len(pcpfiles)}')
 
 outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/climo/'
 #outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/climo/'
 os.makedirs(outdir, exist_ok=True)
 
 # Read data
-ds = xr.open_mfdataset(mcsfiles, concat_dim='time', combine='nested')
+ds = xr.open_mfdataset(pcpfiles, concat_dim='time', combine='nested')
 nx = ds.dims['lon']
 ny = ds.dims['lat']
 lon = ds.lon
@@ -31,9 +38,11 @@ lat = ds.lat
 
 
 # Get number of seasons/years
-years = pd.date_range(start=ds.time.min().values, end=ds.time.max().values, freq='AS')
-nyears = len(years)
-#print(nyears)
+# years = pd.date_range(start=ds.time.min().values, end=ds.time.max().values, freq='AS')
+# nyears = len(years)
+years = ds.time.dt.year
+nyears = len(np.unique(years))
+print(f'Number of unique years: {nyears}')
 
 # Get min/max year and create output file names
 min_year = ds.time.min().dt.strftime("%Y").values
