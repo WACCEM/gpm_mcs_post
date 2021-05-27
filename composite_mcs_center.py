@@ -30,14 +30,14 @@ def location_to_idx(lat, lon, center_lat, center_lon):
     lat_idx, lon_idx = np.unravel_index(diff.argmin(), diff.shape)
     return lat_idx, lon_idx
 
-# def pad_array(s_array, ny, nx):
-#     """ Pad s_array out to span dimensions. Centering Array, offset distributed right. """
-#     s_array_dims = s_array.shape
-#     d1 = int(np.ceil(2*ny - s_array_dims[0] ))
-#     d2 = int(np.ceil(2*nx - s_array_dims[1] ))
+def pad_array(s_array, ny, nx):
+    """ Pad s_array out to span dimensions. Centering Array, offset distributed right. """
+    s_array_dims = s_array.shape
+    d1 = int(np.ceil(2*ny+1 - s_array_dims[0] ))
+    d2 = int(np.ceil(2*nx+1 - s_array_dims[1] ))
 
-#     d_array = np.pad(s_array, ((d1,d1), (d2,d2)), 'constant', constant_values=np.nan)
-#     return d_array[0:ny*2, 0:nx*2]
+    d_array = np.pad(s_array, ((d1,d1), (d2,d2)), 'constant', constant_values=np.nan)
+    return d_array[0:ny*2+1, 0:nx*2+1]
 
 ######################################################
 def composite_mcs_center(
@@ -112,11 +112,27 @@ def composite_mcs_center(
 
                 # Find closest pixel location to the MCS PF center
                 liy, lix = location_to_idx(lat, lon, pf_lat[imatchcloud], pf_lon[imatchcloud])
+
+                # Define window corner indices
+                x_left = lix-nx
+                x_right = lix+nx+1
+                y_bottom = liy-ny
+                y_top = liy+ny+1
+                # Prevent indices from going out of bound
+                if x_left < 0:
+                    x_left = 0
+                if x_right > xdim:
+                    x_right = xdim
+                if y_bottom < 0:
+                    y_bottom = 0
+                if y_top > ydim:
+                    y_top = ydim
+
                 # Take a window center at the MCS PF
-                # rain_cut = pad_array(rawrainratemap[liy-ny:liy+ny, lix-nx:lix+nx], ny, nx)
-                # cloudnumber_cut = pad_array(cloudnumbermap[liy-ny:liy+ny, lix-nx:lix+nx], ny, nx)
-                rain_cut = rawrainratemap[liy-ny:liy+ny+1, lix-nx:lix+nx+1]
-                cloudnumber_cut = cloudnumbermap[liy-ny:liy+ny+1, lix-nx:lix+nx+1]
+                rain_cut = pad_array(rawrainratemap[y_bottom:y_top, x_left:x_right], ny, nx)
+                cloudnumber_cut = pad_array(cloudnumbermap[y_bottom:y_top, x_left:x_right], ny, nx)
+                # rain_cut = rawrainratemap[liy-ny:liy+ny+1, lix-nx:lix+nx+1]
+                # cloudnumber_cut = cloudnumbermap[liy-ny:liy+ny+1, lix-nx:lix+nx+1]
 
                 # Mask out area not matching the MCS track number
                 imask = cloudnumber_cut == itracknum

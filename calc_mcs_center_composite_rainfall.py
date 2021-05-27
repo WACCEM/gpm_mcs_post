@@ -25,7 +25,7 @@ if __name__ == "__main__":
     region = 'asia'
 
     # Domain boundary
-    lon_box = [70, 95]
+    lon_box = [65, 100]
     lat_box = [0, 30]
     # Composite window size in one direction [km]
     # Output window size is 2 x window_size_km
@@ -106,7 +106,8 @@ if __name__ == "__main__":
     # Subset the tracks from the dataset
     dsrobust = dsrobust.isel(tracks=trackid, drop=True)
     # Keep the original tracknumbers (this is important to match pixel-level files!)
-    tracknumbers = dsrobust['tracks'].values
+    # tracknumbers = dsrobust['tracks'].values
+    tracknumbers = np.copy(trackid)
     rmcs_basetime = dsrobust['base_time'].values
     mcs_status = dsrobust['mcs_status'].values
     # Get the largest PF center lat/lon
@@ -352,10 +353,10 @@ if __name__ == "__main__":
     dsout.time.attrs['long_name'] = 'Epoch Time (since 1970-01-01T00:00:00)'
     dsout.time.attrs['units'] = 'Seconds since 1970-1-1 0:00:00 0:00'
 
-    # dsout['time_ne'].attrs = dsout['time'].attrs
-    # dsout['time_se'].attrs = dsout['time'].attrs
-    # dsout['time_sw'].attrs = dsout['time'].attrs
-    # dsout['time_nw'].attrs = dsout['time'].attrs
+    dsout['time_ne'].attrs = dsout['time'].attrs
+    dsout['time_se'].attrs = dsout['time'].attrs
+    dsout['time_sw'].attrs = dsout['time'].attrs
+    dsout['time_nw'].attrs = dsout['time'].attrs
 
     dsout.y.attrs['long_name'] = 'Relative y-distance from MCS PF center'
     dsout.y.attrs['units'] = 'km'
@@ -385,5 +386,3 @@ if __name__ == "__main__":
     # Write to netcdf file
     dsout.to_netcdf(path=out_file, mode='w', format='NETCDF4_CLASSIC', unlimited_dims='time', encoding=encoding)
     print('Output saved as: ', out_file)
-
-    # import pdb; pdb.set_trace()

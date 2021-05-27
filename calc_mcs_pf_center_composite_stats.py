@@ -1,14 +1,15 @@
 import numpy as np
 import glob, os
 import xarray as xr
-import time, datetime, calendar, pytz
+import time
 
 
 if __name__ == "__main__":
 
     region = 'asia'
     
-    datadir = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/'
+#     datadir = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/'
+    datadir = f'/global/cscratch1/sd/feng045/E3SM/GPM_IMERG/{region}/mean_direction/'
     datafiles = sorted(glob.glob(f'{datadir}mcs_center_composite_20??????_20??????*.nc'))
     print(f'Number of files: {len(datafiles)}')
 
@@ -19,15 +20,22 @@ if __name__ == "__main__":
     ds = xr.open_mfdataset(datafiles, concat_dim='time', combine='nested')
     ntimes = ds.dims['time']
 
+    # Count the number of valid frames
+    ntimes_all = np.count_nonzero(~np.isnan(ds['time']))
+    ntimes_ne = np.count_nonzero(~np.isnan(ds['time_ne']))
+    ntimes_se = np.count_nonzero(~np.isnan(ds['time_se']))
+    ntimes_sw = np.count_nonzero(~np.isnan(ds['time_sw']))
+    ntimes_nw = np.count_nonzero(~np.isnan(ds['time_nw']))
+
     # Simple mean
-    pcp_avg = ds['precipitation'].mean(dim='time').load()
-    pcp_avg_ne = ds['precipitation_ne'].mean(dim='time').load()
-    pcp_avg_se = ds['precipitation_se'].mean(dim='time').load()
-    pcp_avg_sw = ds['precipitation_sw'].mean(dim='time').load()
-    pcp_avg_nw = ds['precipitation_nw'].mean(dim='time').load()
+    pcp_avg = ds['precipitation'].where(~np.isnan(ds['time']), drop=True).mean(dim='time').load()
+    pcp_avg_ne = ds['precipitation_ne'].where(~np.isnan(ds['time_ne']), drop=True).mean(dim='time').load()
+    pcp_avg_se = ds['precipitation_se'].where(~np.isnan(ds['time_se']), drop=True).mean(dim='time').load()
+    pcp_avg_sw = ds['precipitation_sw'].where(~np.isnan(ds['time_sw']), drop=True).mean(dim='time').load()
+    pcp_avg_nw = ds['precipitation_nw'].where(~np.isnan(ds['time_nw']), drop=True).mean(dim='time').load()
 
     # Rechunk time dimension for dask parallel computation
-    pcp = ds['precipitation'].chunk({'time': -1})
+    pcp = ds['precipitation'].where(~np.isnan(ds['time']), drop=True).chunk({'time': -1})
     pcp_ne = ds['precipitation_ne'].where(~np.isnan(ds['time_ne']), drop=True).chunk({'time': -1})
     pcp_se = ds['precipitation_se'].where(~np.isnan(ds['time_se']), drop=True).chunk({'time': -1})
     pcp_sw = ds['precipitation_sw'].where(~np.isnan(ds['time_sw']), drop=True).chunk({'time': -1})
@@ -58,7 +66,11 @@ if __name__ == "__main__":
                         attrs={'title': 'MCS PF-center composite statistics', \
                                 'lon_box':ds.attrs['lon_box'], \
                                 'lat_box':ds.attrs['lat_box'], \
-                                'ntimes':ntimes, \
+                                'ntimes_all':ntimes_all, \
+                                'ntimes_ne':ntimes_ne, \
+                                'ntimes_se':ntimes_se, \
+                                'ntimes_sw':ntimes_sw, \
+                                'ntimes_nw':ntimes_nw, \
                                 'contact':'Zhe Feng, zhe.feng@pnnl.gov', \
                                 'created_on':time.ctime(time.time())}
                         )
