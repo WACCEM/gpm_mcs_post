@@ -1,0 +1,12 @@
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 01 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 02 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 03 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 04 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 05 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 06 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 07 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 08 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 09 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 10 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 11 asia -5 5 60 180
+run_mcs_monthly_rainhov.sh 20190101 20191231 2019 12 asia -5 5 60 180

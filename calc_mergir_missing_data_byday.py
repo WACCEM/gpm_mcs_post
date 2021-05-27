@@ -2,7 +2,7 @@
 Calculate number of valid data within a period of time from MERGIR global data.
 """
 __author__ = "Zhe.Feng@pnnl.gov"
-__date__ = "26-Feb-2019"
+__date__ = "16-Mar-2021"
 
 import numpy as np
 import glob, os, sys
@@ -11,14 +11,15 @@ import time, datetime, calendar, pytz
 
 year = sys.argv[1]
 month = (sys.argv[2]).zfill(2)
+day = (sys.argv[3]).zfill(2)
 
 # datadir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/{year}/'
 datadir = f'/global/cscratch1/sd/feng045/waccem/IR_IMERG_Combined/{year}/'
-datafiles = sorted(glob.glob(f'{datadir}*merg_{year}{month}????_4km-pixel.nc'))
+datafiles = sorted(glob.glob(f'{datadir}*merg_{year}{month}{day}??_4km-pixel.nc'))
 print(f'Number of files: {len(datafiles)}')
 
-outdir = '/global/cscratch1/sd/feng045/waccem/MERGIR_Global/Regrid/stats/'
-map_outfile = f'{outdir}merg_monthly_validcount_{year}{month}.nc'
+outdir = '/global/cscratch1/sd/feng045/waccem/MERGIR_Global/Regrid/stats_daily/'
+map_outfile = f'{outdir}merg_daily_validcount_{year}{month}{day}.nc'
 
 
 # Read data
@@ -42,7 +43,7 @@ count30 = (ds.Tb.isel(time=t30idx) > 0).sum(dim='time')
 
 # Compute Epoch Time for the month
 date = np.zeros(1, dtype=int)
-date[0] = calendar.timegm(datetime.datetime(int(year), int(month), 1, 0, 0, 0, tzinfo=pytz.UTC).timetuple())
+date[0] = calendar.timegm(datetime.datetime(int(year), int(month), int(day), 0, 0, 0, tzinfo=pytz.UTC).timetuple())
 
 # Define xarray dataset for map
 print('Writing map to netCDF file ...')
