@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# This script subsets the MCS tracking pixel-level files to a sub-region and put each month in a separate directory
-# Zhe Feng, 07/27/2020
+# Subset the MCS tracking pixel-level files to a sub-region and compress the files in each month to a tar file.
+# Zhe Feng, 06/04/2021
 
 if [[ $# -ne 10 ]] ; then
-  echo 'Usage: subset_mcstracking_pixel_bymonth.sh lon_min lon_max lat_min lat_max start_year end_year start_month end_month input_dir output_dir'
+  echo 'Usage: subset_tar_mcstracking_pixel_bymonth.sh lon_min lon_max lat_min lat_max start_year end_year start_month end_month input_dir output_dir'
   exit 1
 fi
 
@@ -35,34 +35,45 @@ emonth=$8
 indir=${09}
 outdir=${10}
 
+# Scratch directory to store the temporary subset files
+scratchdir="/global/cscratch1/sd/feng045/tmp/"
+
 # Loop over year
 for iyear in $(seq $syear $eyear); do
 
   # Loop over month
   for imon in $(seq -f "%02g" $smonth $emonth); do
 
-    # Create output directory for each month
-    ioutdir="${outdir}/${iyear}/${imon}/"
-    mkdir -p ${ioutdir}
+    # Create output directory for each month in the scratch directory
+    iscratchdir="${scratchdir}/${iyear}/${imon}/"
+    mkdir -p ${iscratchdir}
 
     echo $iyear-$imon
 
     # Find all files in this month
     infiles=$(ls -1 ${indir}/${iyear}0101_${iyear}1231/mcstrack_${iyear}${imon}*nc)
     
-    # #echo $infiles
+    # echo $infiles
     
     # Loop over list input file
     for file in ${infiles}; do
       # Strip file path to get file name
       fname=$(basename "$file")
       # Add output path to filename
-      outname="${ioutdir}${fname}"
+      outname="${iscratchdir}${fname}"
       echo "$outname"
       #echo "ncks -O -Q -d lat,$latmin,$latmax -d lon,$lonmin,$lonmax $file -o $outname"
       # Run ncks to subset a region
       ncks -O -Q -d lat,$latmin,$latmax -d lon,$lonmin,$lonmax $file -o $outname
     done
+
+    # Make an output directory for this year
+    ioutdir="${outdir}${iyear}/"
+    mkdir -p ${ioutdir}
+
+    # Compress the files for this month
+    # echo "tar -cvzf ${ioutdir}${imon}.tar.gz ${iscratchdir}*.nc"
+    tar -cvzf ${ioutdir}${imon}.tar.gz ${iscratchdir}*.nc
 
   done
   
