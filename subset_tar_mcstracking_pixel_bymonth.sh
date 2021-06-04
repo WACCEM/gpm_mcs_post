@@ -68,7 +68,7 @@ for iyear in $(seq $syear $eyear); do
     done
 
     # Make an output directory for this year
-    ioutdir="${outdir}${iyear}/"
+    ioutdir="${outdir}/${iyear}/"
     mkdir -p ${ioutdir}
 
     # Compress the files for this month
