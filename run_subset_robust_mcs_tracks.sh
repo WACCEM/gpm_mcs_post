@@ -8,7 +8,7 @@ if [[ $# -ne 8 ]] ; then
   exit 1
 fi
 
-conda activate p37
+conda activate /global/cfs/cdirs/m1867/zfeng/envs/py38
 
 lonmin=$1
 lonmax=$2
