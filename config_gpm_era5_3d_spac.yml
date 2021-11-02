@@ -1,0 +1,21 @@
+---
+# ERA5 3D hourly data directory
+era5_dir: "/global/cscratch1/sd/feng045/ERA5/e5.oper.an.pl/"
+# MCS track statistics file
+stats_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/robust/filtered/"
+# Output file directory
+output_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/era5_3d/"
+# Combinedd environmental file directory
+envs_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/envs/"
+# MCS track statistics file basename
+mcsfile_basename: "robust_mcs_tracks_extc_"
+# Box size center at MCS
+# Number of grid point in lon/lat dimension [center-nx, center+nx], [center-ny, center+ny]
+nx: 4
+ny: 4
+# Vertical level limits to save in ERA5
+level_lims: [100., 1000.]
+# Dask workers and threads
+run_parallel: 1
+n_workers: 31
+threads_per_worker: 2

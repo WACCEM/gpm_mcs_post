@@ -1,0 +1,8 @@
+---
+# MCS track statistics file
+stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/"
+# stats_file: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/robust_mcs_tracks_20180601_20190630.nc"
+# Pixel file directory
+pixel_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking/"
+# Output file directory
+output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/monthly/"

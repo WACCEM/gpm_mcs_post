@@ -75,6 +75,8 @@ for iyear in $(seq $syear $eyear); do
     # echo "tar -cvzf ${ioutdir}${imon}.tar.gz ${iscratchdir}*.nc"
     tar -cvzf ${ioutdir}${imon}.tar.gz ${iscratchdir}*.nc
 
+    rm -fr ${iscratchdir}
+
   done
   
 done

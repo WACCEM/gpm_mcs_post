@@ -1,7 +1,7 @@
 #!/bin/bash
 
-startyear=2008
-endyear=2012
+startyear=2018
+endyear=2019
 # region="asia"
 region="spac"
 # region="nam"

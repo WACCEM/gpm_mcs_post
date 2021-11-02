@@ -1,0 +1,2 @@
+run_ccs_monthly_countmap.sh 20200120 20200228 2020 01 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_4scream.yml
+run_ccs_monthly_countmap.sh 20200120 20200228 2020 02 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_4scream.yml

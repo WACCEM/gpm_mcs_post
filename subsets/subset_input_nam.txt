@@ -1,0 +1,12 @@
+lonmin -130.
+lonmax -90.
+latmin 20.
+latmax 45.
+syear 2001
+eyear 2019
+smonth 1
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_region/nam/mcstracking_ccs4_4h/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/nam/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_region/nam/stats_ccs4_4h/robust/filtered/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/nam/stats/

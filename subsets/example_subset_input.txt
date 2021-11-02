@@ -1,0 +1,12 @@
+lonmin 110.
+lonmax 135.
+latmin 0.
+latmax 25.
+syear 2000
+eyear 2019
+smonth 1
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_region/asia/mcstracking_ccs4_4h/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/philippine/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_region/asia/stats_ccs4_4h/robust/filtered/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/philippine/stats/

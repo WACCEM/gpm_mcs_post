@@ -9,31 +9,34 @@ History:
 import numpy as np
 import glob, sys, os
 import xarray as xr
-import pandas as pd
 import time, datetime, calendar, pytz
-
+import yaml
 
 sdate = sys.argv[1]
 edate = sys.argv[2]
 year = (sys.argv[3])
 month = (sys.argv[4]).zfill(2)
-region = sys.argv[5]
-pcpvarname = 'precipitation'
+# region = sys.argv[5]
+config_file = sys.argv[5]
+# pcpvarname = 'precipitation'
 
-# mcsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
-mcsdir = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/{sdate}_{edate}/'
-outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
-mcsfiles = sorted(glob.glob(mcsdir + 'mcstrack_' + year + month + '??_????.nc'))
-print(mcsdir)
+# get inputs from configuration file
+stream = open(config_file, 'r')
+config = yaml.full_load(stream)
+pixel_dir = config['pixelfile_dir']
+output_dir = config['output_dir']
+pcpvarname = config['pcpvarname']
+
+mcsfiles = sorted(glob.glob(f'{pixel_dir}/{sdate}_{edate}/mcstrack_{year}{month}??_????.nc'))
+print(pixel_dir)
 print(year, month)
 print('Number of files: ', len(mcsfiles))
-os.makedirs(outdir, exist_ok=True)
+os.makedirs(output_dir, exist_ok=True)
 
-map_outfile = outdir + 'mcs_rainmap_' + year + month + '.nc'
+map_outfile = f'{output_dir}mcs_rainmap_{year}{month}.nc'
 
 # Read data
 ds = xr.open_mfdataset(mcsfiles, concat_dim='time', combine='nested', drop_variables=['numclouds','tb'])
-#ds.load()
 print('Finish reading input files.')
 
 ntimes = ds.dims['time']
