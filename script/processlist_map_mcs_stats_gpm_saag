@@ -1,0 +1,13 @@
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 06 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 07 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 08 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 09 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 10 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 11 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2018 12 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 01 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 02 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 03 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 04 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 05 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml
+run_map_mcs_monthly_stats.sh 20180601 20190630 2019 06 /global/homes/f/feng045/program/gpm_mcs_post/config_gpm_saag.yaml

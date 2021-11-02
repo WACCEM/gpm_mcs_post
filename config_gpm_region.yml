@@ -1,0 +1,20 @@
+---
+stats_path: '/global/cscratch1/sd/feng045/waccem/mcs_region/REGION/stats_ccs4_4h/robust/filtered/'
+pixelfile_path: '/global/cscratch1/sd/feng045/waccem/mcs_region/REGION/mcstracking_ccs4_4h/'
+mcsstats_filebase: 'robust_mcs_tracks_extc_'
+pixel_filebase: 'mcstrack_'
+landmask_file: '/global/cscratch1/sd/feng045/waccem/mcs_region/map-data/IMERG_landmask_REGION.nc'
+out_path: '/global/cscratch1/sd/feng045/waccem/mcs_region/REGION/'
+# Precipitation variable name
+pcpvarname: 'precipitation'
+# Dask workers and threads
+n_workers: 30
+threads_per_worker: 1
+# Rain rate threshold to define a PF [mm/h]
+rr_min: 2.0
+# Pixel size [km]
+pixel_radius: 10.0  
+# Minimum PF area threshold [km^2]
+pf_min_area_thresh: 0
+# Threshold of pixel-level land fraction to define a land pixel [%]
+landfrac_thresh: 90

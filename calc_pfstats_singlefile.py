@@ -1,13 +1,14 @@
 import numpy as np
-import os, glob
-import time, datetime, calendar
-from netCDF4 import Dataset, num2date, chartostring
-from scipy.ndimage import label, binary_dilation, generate_binary_structure
-from skimage.measure import regionprops
-from math import pi
-from scipy.stats import skew
+import os
+# import glob
+# import time, datetime, calendar
+# from netCDF4 import Dataset, num2date, chartostring
+from scipy.ndimage import label
+# from skimage.measure import regionprops
+# from math import pi
+# from scipy.stats import skew
 import xarray as xr
-import pandas as pd
+# import pandas as pd
 
 
 def sort_renumber(labelcell_number2d, min_cellpix):
@@ -110,7 +111,7 @@ def calc_pfstats_singlefile(
 
     # Read pixel data file
     if os.path.isfile(pixel_filename):
-        print(pixel_filename)
+        # print(pixel_filename)
 
         # Read pixel-level data
         ds = xr.open_dataset(pixel_filename, decode_times=False)
@@ -278,11 +279,8 @@ def calc_pfstats_singlefile(
 
             # import pdb; pdb.set_trace()
 
-    return (
-        pf_npf, 
-        pf_landfrac, 
-        # pf_pflon, 
-        # pf_pflat, 
-        # pf_pfnpix, 
-        # pf_maxrate, 
-        )
+    # Put output variables to a dictionary for easier access
+    out_dict = {'pf_npf':pf_npf, 'pf_landfrac':pf_landfrac}
+    print(f'Done processing: {pixel_filename}')
+
+    return out_dict

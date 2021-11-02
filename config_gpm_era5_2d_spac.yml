@@ -1,0 +1,26 @@
+---
+# ERA5 2D hourly data directory
+# era5_dir: "/global/cfs/projectdirs/m3522/cmip6/ERA5/e5.oper.an."
+era5_dir: "/global/cscratch1/sd/feng045/ERA5/e5.oper.an."
+era5_dir_special: "/global/cscratch1/sd/feng045/ERA5/global/sfc/"
+# MCS track statistics file
+stats_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/robust/filtered/"
+# Output file directory
+output_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/era5/"
+# Combinedd environmental file directory
+envs_dir: "/global/cscratch1/sd/feng045/waccem/mcs_region/spac/stats_ccs4_4h/envs/"
+# MCS track statistics file basename
+mcsfile_basename: "robust_mcs_tracks_extc_"
+# Environment statistics file basename
+in_env_basename: "mcs_preinit_era5_*"
+out_env_basename: "mcs_preinit_envs_era5_"
+# Box size center at MCS
+# Number of grid point in lon/lat dimension [center-nx, center+nx], [center-ny, center+ny]
+nx: 2
+ny: 2
+# Number of hours prior to initiation to save
+nhours: 24
+# Dask workers and threads
+run_parallel: 1
+n_workers: 12
+threads_per_worker: 1

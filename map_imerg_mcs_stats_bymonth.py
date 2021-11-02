@@ -14,6 +14,7 @@ from netCDF4 import Dataset
 import sys, glob, os.path
 import time, datetime, calendar, pytz
 from pytz import utc
+import yaml
 
 def make_base_time(filename):
     """
@@ -44,28 +45,34 @@ sdate = sys.argv[1]
 edate = sys.argv[2]
 year = int(sys.argv[3])
 month = int(sys.argv[4])
-region = sys.argv[5]
+# region = sys.argv[5]
+config_file = sys.argv[5]
 #sdate = '20181001'
 #edate = '20190310'
 #year = 2018
 #month = 10
 
-stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
-pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
+# get inputs from configuration file
+stream = open(config_file, 'r')
+config = yaml.full_load(stream)
+# stats_file = config['stats_file']
+stats_dir = config['stats_dir']
+pixel_dir = config['pixelfile_dir']
+output_dir = config['output_dir']
 
 yearstr = str(year)
 monthstr = str(month).zfill(2)
-#stats_file = f'{stats_path}robust_mcs_tracks_{sdate}_{edate}.nc'
-stats_file = f'{stats_path}robust_mcs_tracks_extc_{sdate}_{edate}.nc'
+stats_file = f'{stats_dir}robust_mcs_tracks_{sdate}_{edate}.nc'
+# stats_file = f'{stats_dir}robust_mcs_tracks_extc_{sdate}_{edate}.nc'
 print(f'{stats_file}')
 # Open stats file
 stats = xr.open_dataset(stats_file)
 stats.load()
 
-pixel_files = sorted(glob.glob(f'{pixel_path}{sdate}_{edate}/mcstrack_*nc'))
+pixel_files = sorted(glob.glob(f'{pixel_dir}/{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
+# output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/monthly/'
 output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}.nc'
 os.makedirs(output_dir, exist_ok=True)
 
