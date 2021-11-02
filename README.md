@@ -84,10 +84,34 @@
 
 	Calculates seasonal mean total, MCS precipitation amount and saves to a netCDF file.
 
-	
+
 	- *calc_mcs_seasonal_mean_statsmap.py*
 	- *calc_mcs_seasonal_mean_statsmap_nospeed.py*
 
 	Calculate seasonal mean MCS statistics (e.g., MCS number, lifetime, area, max rain rate, etc.) and saves to a netCDF file.
+
+**Codes to subset statistics/pixel-level data within a region**
+
+*  Subset codes are in the /subsets directory
+
+*  Creates subset pixel-level file tasks job array
+    - *make_subset_mcstracking_pixel_tasks.sh*
+
+*  Run subset robust MCS statistics
+    - *run_subset_robust_mcs_tracks.sh*
+
+
+**Codes to calculate MCS environments from ERA5 reanalysis**
+
+*  Calculate environments within a region center at each MCS (moving with MCS)
+    - *calc_imerg_mcs_era5_2d.py*
+    - *calc_imerg_mcs_era5_3d.py*
+
+*  Calculate environments prior to MCS initiation at the initiation location (fixed location)
+    - *calc_imerg_mcs_era5_2d_preinitiation.py*
+    - *calc_imerg_mcs_era5_3d_preinitiation.py*
+
+*  Extract 3D profiles within a region center at each MCS (moving with MCS)
+    - *extract_imerg_mcs_era5_3d.py*
 
 **Job submission scripts using NERSC TaskFarmer for parallization are in the /scripts directory.**
