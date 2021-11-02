@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script makes TaskFarmer scripts to subset MCS pixel files within a region and period
+# This script makes slurm job array scripts to subset MCS pixel files within a region and period
 # The region and period are read from an ASCII file "input.txt"
 # To run this script:
 # 1. Remove pre-existing temporary directories
@@ -10,18 +10,6 @@
 # >sbatch --array=0-19%10 slurm_subset_jobarray_knl.sh
 # 4. SUbmit the slurm job to tar the subset data
 # >sbatch slurm_tarfiles_knl.sh
-
-# # Get input arguments
-# lonmin=$1
-# lonmax=$2
-# latmin=$3
-# latmax=$4
-# syear=$5
-# eyear=$6
-# smonth=$7
-# emonth=$8
-# indir=${09}
-# outdir=${10}
 
 # Read each line into var1, var2, ...
 # The variables must be in the exact order to work
