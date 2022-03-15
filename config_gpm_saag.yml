@@ -1,8 +1,20 @@
 ---
 # MCS track statistics file
-stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/"
+# stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/"
+# stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats_4pyflex/"
+stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/stats/"
 # stats_file: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/robust_mcs_tracks_20180601_20190630.nc"
 # Pixel file directory
-pixel_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking/"
+# pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking/"
+# pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking_4pyflex/"
+pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/mcstracking/"
 # Output file directory
-output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/monthly/"
+# output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/monthly/"
+# output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats_4pyflex/monthly/"
+output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/stats/monthly/"
+pcpvarname: 'precipitation'
+# Movement variable names in MCS track stats
+# varname_speed: 'movement_r_meters_per_second'
+varname_speed: 'movement_speed'
+varname_mov_x: 'movement_distance_x'
+varname_mov_y: 'movement_distance_y'

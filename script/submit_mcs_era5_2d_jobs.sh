@@ -33,7 +33,7 @@ for region in "${regions[@]}"; do
             template="template_slurm_mcs_era5_2d"
             slurm_name="slurm_era5_${vars[$i]}_${date}_${region}"
 
-            sed "s/BASENAME/"${base_name[$i]}"/g;s/VAR/"${vars[$i]}"/g;s/DIR/"${dirs[$i]}"/g;s/DATES/"${date}"/g" ${template} > ${slurm_name}
+            sed "s/BASENAME/"${base_name[$i]}"/g;s/VAR/"${vars[$i]}"/g;s/DIR/"${dirs[$i]}"/g;s/DATES/"${date}"/g;s/REGION/"${region}"/g" ${template} > ${slurm_name}
 
             # Submit the job
             echo ${slurm_name}

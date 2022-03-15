@@ -1,13 +1,16 @@
 ---
 # stats_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/stats/'
 # pixelfile_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/mcstracking/'
-stats_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/stats_ccs1_2h/'
-pixelfile_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/mcstracking_ccs1_2h/'
-mcsstats_filebase: 'robust_mcs_tracks_'
+# stats_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/stats_ccs1_2h/'
+# pixelfile_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/mcstracking_ccs1_2h/'
+stats_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/pyflex/stats/'
+pixelfile_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/pyflex/mcstracking/'
+# mcsstats_filebase: 'robust_mcs_tracks_'
+mcsstats_filebase: 'mcs_tracks_final_'
 pixel_filebase: 'mcstrack_'
 landmask_file: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/maps/IMERG_Tb_landseamask_1200x3600_0-360.nc'
 # output_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/stats/'
-output_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/stats_ccs1_2h/'
+output_dir: '/global/cscratch1/sd/feng045/E3SM/SCREAMv0/gpm_1200x3600/pyflex/stats/'
 # Precipitation variable name
 pcpvarname: 'precipitation'
 # Dask workers and threads

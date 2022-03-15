@@ -43,14 +43,14 @@ ntimes = ds.dims['time']
 
 
 # Sum MCS precipitation over time, use cloudtracknumber > 0 as mask
-mcsprecip = ds[pcpvarname].where(ds.cloudtracknumber > 0).sum(dim='time')
+mcsprecip = ds[pcpvarname].where(ds['cloudtracknumber'] > 0).sum(dim='time')
 #mcsprecip = ds[pcpvarname].where(ds.pcptracknumber > 0).sum(dim='time')
 
 # Sum total precipitation over time
 totprecip = ds[pcpvarname].sum(dim='time')
 
 # Convert all MCS track number to 1 for summation purpose
-pcpnumber = ds.pcptracknumber.values
+pcpnumber = ds['pcptracknumber'].values
 pcpnumber[pcpnumber > 0] = 1
 
 # Convert numpy array to DataArray

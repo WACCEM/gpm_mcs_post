@@ -29,10 +29,10 @@ if __name__ == "__main__":
     os.makedirs(envs_dir, exist_ok=True)
 
     # Generate time marks within the start/end datetime
-    file_startdates = pd.date_range(start=start_year, end=end_year, freq='YS', closed='left').strftime('%Y%m%d')
-    file_enddates = pd.date_range(start=start_year, end=end_year, freq='Y', closed='left').strftime('%Y%m%d')
-    # file_startdates = [f'{start_year}0120']
-    # file_enddates = [f'{end_year}0228']
+    # file_startdates = pd.date_range(start=start_year, end=end_year, freq='YS', closed='left').strftime('%Y%m%d')
+    # file_enddates = pd.date_range(start=start_year, end=end_year, freq='Y', closed='left').strftime('%Y%m%d')
+    file_startdates = [f'{start_year}0120.0000']
+    file_enddates = [f'{end_year}0301.0000']
 
     # Loop over each time
     for ii in range(0, len(file_enddates)):
