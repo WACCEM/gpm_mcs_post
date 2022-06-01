@@ -14,6 +14,7 @@ from netCDF4 import Dataset
 import sys, glob, os.path
 import time, datetime, calendar, pytz
 from pytz import utc
+import yaml
 
 def make_base_time(filename):
     """
@@ -45,40 +46,48 @@ edate = sys.argv[2]
 year = int(sys.argv[3])
 month = int(sys.argv[4])
 day = int(sys.argv[5])
-region = sys.argv[6]
+config_file = sys.argv[6]
+# region = sys.argv[6]
 #sdate = '20181001'
 #edate = '20190310'
 #year = 2018
 #month = 10
 
-stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/robust/filtered/'
-#pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/'
-pixel_path = f'/global/cscratch1/sd/liunana/IR_IMERG_Combined/mcs_region/{region}/mcstracking_ccs4_4h/'
-# stats_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_pt1/robust/filtered/'
-# pixel_path = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_pt1/'
+# get inputs from configuration file
+stream = open(config_file, 'r')
+config = yaml.full_load(stream)
+# stats_file = config['stats_file']
+stats_dir = config['stats_dir']
+pixel_dir = config['pixelfile_dir']
+output_daily_dir = config['output_daily_dir']
+varname_speed = config['varname_speed']
+varname_mov_x = config['varname_mov_x']
+varname_mov_y = config['varname_mov_y']
+
+begin_time = datetime.datetime.now()
 
 yearstr = str(year)
 monthstr = str(month).zfill(2)
 daystr = str(day).zfill(2)
-#stats_file = f'{stats_path}robust_mcs_tracks_{sdate}_{edate}.nc'
-stats_file = f'{stats_path}robust_mcs_tracks_extc_{sdate}_{edate}.nc'
+#stats_file = f'{stats_dir}robust_mcs_tracks_{sdate}_{edate}.nc'
+stats_file = f'{stats_dir}mcs_tracks_final_extc_{sdate}_{edate}.nc'
 # Open stats file
 stats = xr.open_dataset(stats_file)
 #stats.load()
 
-pixel_files = sorted(glob.glob(f'{pixel_path}{sdate}_{edate}/mcstrack_*nc'))
+# Find all pixel files
+pixel_files = sorted(glob.glob(f'{pixel_dir}{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_dir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/daily/'
-output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}{daystr}.nc'
-os.makedirs(output_dir, exist_ok=True)
+output_file = f'{output_daily_dir}mcs_statsmap_{yearstr}{monthstr}{daystr}.nc'
+os.makedirs(output_daily_dir, exist_ok=True)
 
 # Get map dimensions
 dspix = xr.open_dataset(pixel_files[0])
 nx = dspix.dims['lon']
 ny = dspix.dims['lat']
-lon = dspix.lon
-lat = dspix.lat
+lon = dspix.lon.data
+lat = dspix.lat.data
 
 # Set up a dictionary that keyed by base_time, valued by filename.
 # This is a clever way to move between time and pixel files
@@ -86,7 +95,7 @@ time_to_pixfilename = {key:value for key, value in map(make_base_time, pixel_fil
 
 
 # Get initial time for each track
-inittime = stats.base_time.isel(times=0).load()
+inittime = stats.base_time.isel(times=0)
 # Get the month
 initmonth = inittime.dt.month
 initday = inittime.dt.day
@@ -101,22 +110,33 @@ print('Number of MCS: ', nmcs)
 trackidx = np.array(trackidx.values).astype(int)
 
 # Subset variables to tracks in the current month
-base_time = stats.base_time.sel(tracks=trackidx).load()
-lifetime = (stats.length.sel(tracks=trackidx) * stats.time_resolution_hour).load()
-tracks = stats.tracks.sel(tracks=trackidx).load()
-ccs_area = stats.ccs_area.sel(tracks=trackidx).load()
-pf_area = stats.pf_area.sel(tracks=trackidx, nmaxpf=0).load()
-mcs_status = stats.pf_mcsstatus.sel(tracks=trackidx).load()
-starttrackresult = stats.starttrackresult.sel(tracks=trackidx).load()
-pf_maxrainrate = stats.pf_maxrainrate.sel(tracks=trackidx).load()
-total_rain = stats.total_rain.sel(tracks=trackidx).load()
-total_heavyrain = stats.total_heavyrain.sel(tracks=trackidx).load()
-rainrate_heavyrain = stats.rainrate_heavyrain.sel(tracks=trackidx).load()
-# cloudnumber = stats.cloudnumber.sel(tracks=trackidx)
-speed = stats.movement_r_meters_per_second.sel(tracks=trackidx).load()
-# movement_x and movement_y are in [km]/timestep, divide by 3.6 (1000m/3600s) to convert to [m/s]
-uspeed = (stats.movement_storm_x.sel(tracks=trackidx)/3.6).load()
-vspeed = (stats.movement_storm_y.sel(tracks=trackidx)/3.6).load()
+start_split_cloudnumber = stats['start_split_cloudnumber'].sel(tracks=trackidx).load()
+base_time = stats['base_time'].sel(tracks=trackidx).load()
+# lifetime = (stats['length'].sel(tracks=trackidx) * stats.time_resolution_hour).load()
+lifetime = (stats['track_duration'].sel(tracks=trackidx) * stats.time_resolution_hour).load()
+tracks = stats['tracks'].sel(tracks=trackidx).load()
+ccs_area = stats['ccs_area'].sel(tracks=trackidx).load()
+pf_area = stats['pf_area'].sel(tracks=trackidx, nmaxpf=0).load()
+mcs_status = stats['pf_mcsstatus'].sel(tracks=trackidx).load()
+# start_status = stats['starttrackresult'].sel(tracks=trackidx).load()
+start_status = stats['start_status'].sel(tracks=trackidx).load()
+pf_maxrainrate = stats['pf_maxrainrate'].sel(tracks=trackidx).load()
+total_rain = stats['total_rain'].sel(tracks=trackidx).load()
+total_heavyrain = stats['total_heavyrain'].sel(tracks=trackidx).load()
+rainrate_heavyrain = stats['rainrate_heavyrain'].sel(tracks=trackidx).load()
+
+# Check if speed variable exist in the track stats dataset
+ds_varnames = list(stats.keys())
+if varname_speed in ds_varnames:
+    speed_exist = True
+    # cloudnumber = stats.cloudnumber.sel(tracks=trackidx)
+    speed = stats[varname_speed].sel(tracks=trackidx)
+    # movement_x and movement_y are in [km]/timestep, divide by 3.6 (1000m/3600s) to convert to [m/s]
+    uspeed = stats[varname_mov_x].sel(tracks=trackidx)/3.6
+    vspeed = stats[varname_mov_y].sel(tracks=trackidx)/3.6
+else:
+    speed_exist = False
+# import pdb; pdb.set_trace()
 
 
 # Convert datetime64 (when reading base_time from netCDF) to epoch time
@@ -186,12 +206,11 @@ nframes = 0
 
 # Loop over each MCS track
 for imcs in range(nmcs):
-# for imcs in range(0, 2):
+# for imcs in range(0, 1):
     itrack = tracks.values[imcs] + 1
     ilifetime = lifetime.values[imcs]
-#     idxconvinit = lifecycle_index.values[imcs,0]
-#     idxgenesis = lifecycle_index.values[imcs,1]
-    istartstatus = starttrackresult.values[imcs]
+    istartstatus = start_status.values[imcs]
+    istart_splitcloudnumber = start_split_cloudnumber[imcs]
     print(f'Track number: {itrack}')
     
     temp_track = np.zeros((ny, nx))*np.nan
@@ -201,8 +220,6 @@ for imcs in range(nmcs):
     # Loop over each time
     for it in range(ntimes):
         imcsstatus = mcs_status.values[imcs,it]
-#         ilifestage = lifecycle_stage.values[imcs,it]
-#         icn = cloudnumber.values[imcs,it]
         
         if np.isnan(base_times[imcs, it]):
             continue
@@ -213,17 +230,25 @@ for imcs in range(nmcs):
 #             print(pixfname)
             
             # Read pixel data
-            ds = Dataset(pixfname)
-            cloudtracknumber = ds.variables['cloudtracknumber'][0,:,:]
-            pcptracknumber = ds.variables['pcptracknumber'][0,:,:]
-            precipitation = ds.variables['precipitation'][0,:,:]
+            # ds = Dataset(pixfname)
+            # cloudtracknumber = ds.variables['cloudtracknumber'][0,:,:]
+            # pcptracknumber = ds.variables['pcptracknumber'][0,:,:]
+            # precipitation = ds.variables['precipitation'][0,:,:]
+            ds = xr.open_dataset(pixfname, mask_and_scale=False)
+            cloudtracknumber = ds.variables['cloudtracknumber'].squeeze().data
+            pcptracknumber = ds.variables['pcptracknumber'].squeeze().data
+            precipitation = ds.variables['precipitation'].squeeze().data
             # Find cloudnumber matching the current one
-            idx_c = np.where(cloudtracknumber == itrack)
-            idx_p = np.where(pcptracknumber == itrack)
+            # idx_c = np.where(cloudtracknumber == itrack)
+            # idx_p = np.where(pcptracknumber == itrack)
+            idx_c = cloudtracknumber == itrack
+            idx_p = pcptracknumber == itrack
+
             # Check the number of pixels found for this track
-            if (len(idx_c[0]) == 0):
+            if np.count_nonzero(idx_c) == 0:
+            # if (len(idx_c[0]) == 0):
                 print(f'{pixfname}')
-                print(f'Warning: track #{itrack} has no matching pixel found! Something is not right.')
+                print(f'Warning: track #{itrack} has no matching pixel found!')
             
             # Set each frame with a number
             # This is suitable for variables that change with time. e.g. PF area
@@ -236,8 +261,6 @@ for imcs in range(nmcs):
             # Get max rain rate from all PFs
             imaxrainrate = np.nanmax(pf_maxrainrate.values[imcs, it, :])
 
-#             icorearea = core_area.values[imcs, it]
-#             icoremaxis = core_maxis.values[imcs, it]
             ispeed = speed.values[imcs, it]
             iuspeed = uspeed.values[imcs, it]
             ivspeed = vspeed.values[imcs, it]
@@ -247,9 +270,6 @@ for imcs in range(nmcs):
             temp_p = np.zeros((ny, nx))*np.NAN
             temp_mcsrain = np.zeros((ny, nx))
 
-#             temp_ccdbz20 = np.zeros((ny, nx))*np.NAN
-#             temp_corearea = np.zeros((ny, nx))*np.NAN
-#             temp_coremaxis = np.zeros((ny, nx))*np.NAN
             temp_totalrain = np.full((ny, nx), np.NAN)
             temp_totalrainheavy = np.full((ny, nx), np.NAN)
             temp_rainrateheavy = np.full((ny, nx), np.NAN)
@@ -317,7 +337,8 @@ for imcs in range(nmcs):
             #     temp_vspeed_nw[idx_p] = ivspeed
             
             # If MCS start status is not a split, check for initiation/genesis
-            if (istartstatus != 13):
+            # if (istartstatus != 13):
+            if (np.isnan(istart_splitcloudnumber)):
                 # If time step is == 0 (initiation)
                 if (it == 0):
                     map_init_ccs[idx_c] += 1
@@ -514,7 +535,8 @@ dsmap = xr.Dataset({'mcs_number_ccs': (['time', 'lat', 'lon'], np.expand_dims(ma
                     # 'pf_vspeed_mcs_nw': (['time', 'lat', 'lon'], np.expand_dims(map_uspeed_mcs_avg_nw, 0)), \
 
                     'lifetime_pt': (['time', 'percentiles', 'lat', 'lon'], np.expand_dims(map_lifetime_pts, 0)), \
-                    'ntimes': (['time'], xr.DataArray(nframes).expand_dims('time', axis=0)), \
+                    # 'ntimes': (['time'], xr.DataArray(nframes).expand_dims('time', axis=0)), \
+                    'ntimes': (['time'], np.expand_dims(nframes, 0)), \
                    }, \
                     coords={'lon': (['lon'], lon), \
                             'lat': (['lat'], lat), \
@@ -676,3 +698,5 @@ dsmap.to_netcdf(path=output_file, mode='w', format='NETCDF4_CLASSIC', unlimited_
 
 print('Map output saved as: ', output_file)
 
+# Print processing time
+print(datetime.datetime.now() - begin_time)

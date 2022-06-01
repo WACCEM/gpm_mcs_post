@@ -1,6 +1,10 @@
 """
 This script finds MCS track numbers that overlap with Atmospheric Rivers that hit the west coast of 
 Europe, North and South America and save them to a netCDF file.
+
+To run the code:
+Decide which region to run first by changing: lon_boxes, lat_boxes, outfile.
+Separating by Northern vs. Southern Hemsiphere reduces memory usage and speeds up the processing time.
 """
 __author__ = "Zhe.Feng@pnnl.gov"
 __date__ = "01-May-2020"
@@ -91,25 +95,31 @@ if __name__ == '__main__':
     output_dir = config['output_dir']
     ar_dir = config['ar_dir']
     landmask_file = config['landmask_file']
+    run_parallel = config['run_parallel']
     n_workers = config['n_workers']
+
+    os.makedirs(output_dir, exist_ok=True)
 
     # AR tracking file
     arfile = f'{ar_dir}tag_MERRA2_hourlyIVT_{inyear}.nc'
+    # Output MCS tracknumbers file
+    # outfile = f'{output_dir}mcs_ar1_tracknumbers_{indates}.nc'
+    outfile = f'{output_dir}mcs_ar2_tracknumbers_{indates}.nc'
 
-    outfile = f'{output_dir}mcs_ar_tracknumbers_{indates}.nc'
-    os.makedirs(output_dir, exist_ok=True)
+    # Define regions to remove AR. 
+    # The Europe region is the same with Rutz et al. (2019) JGR Fig. 4.
+    # West cost of Europe and North America
+    # lon_boxes = [[-15,10], [-140,-115]]
+    # lat_boxes = [[35,62], [35,62]]
+    # West coast of South America (Patagonia)
+    lon_boxes = [[-76,-70]]
+    lat_boxes = [[-62,-30]]
 
     begin_time = datetime.datetime.now()
 
     # Find all pixel-level files
     pixelfiles = sorted(glob.glob(f'{pixel_dir}{indates}/mcstrack_{inyear}????_????.nc'))
     print(f'Number of pixel files: {len(pixelfiles)}')
-
-    # Define regions to remove AR. 
-    # The Europe region is the same with Rutz et al. (2019) JGR Fig. 4.
-    # West cost of North and South America
-    lon_boxes = [[-15,10], [-140,-115], [-76,-70]]
-    lat_boxes = [[35,62], [35,62], [-62,-30]]
 
     # Get landmask
     dslm = xr.open_dataset(landmask_file)
@@ -174,9 +184,13 @@ if __name__ == '__main__':
     # import matplotlib.pyplot as plt
     # import pdb; pdb.set_trace()
 
-    # Initialize dask
-    cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
-    client = Client(cluster)
+    if run_parallel == 1:
+        # Set Dask temporary directory for workers
+        dask_tmp_dir = '/tmp'
+        dask.config.set({'temporary-directory': dask_tmp_dir})
+        # Initialize dask
+        cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
+        client = Client(cluster)
 
     saved_tracknumber = []
     # for ifile in range(0, 10):
@@ -191,23 +205,27 @@ if __name__ == '__main__':
         ar_mask = dsar.ar_binary_tag.sel(time=itime, method='nearest').data[min_y:max_y, min_x:max_x]
 
         # Call function to find MCS tracknumber within ARs
-        # tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_keep, bounds)
-        tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_keep, bounds)
+        if run_parallel == 0:
+            tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_keep, bounds)
+        elif run_parallel == 1:
+            tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_keep, bounds)
         
-        # Extend the tracknumber list
+        # Append to the tracknumber list
         saved_tracknumber.append(tracknumber)
 
     # Collect results from Dask
-    results = dask.compute(*saved_tracknumber)
-    # print("Done processing {} files.".format(len(results))
-
-    # Flatten the append list
-    # tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
-    tracknumber_list = [item for sublist in results for item in sublist]
+    if run_parallel == 1:
+        results = dask.compute(*saved_tracknumber)
+        # print("Done processing {} files.".format(len(results))
+        # Flatten the append list
+        tracknumber_list = [item for sublist in results for item in sublist]
+    elif run_parallel == 0:
+        tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
 
     # Get unique track numbers, counts. Counts mean number of hours each MCS overlap with AR
     mcs_tracknumber, mcs_nhours = np.unique(tracknumber_list, return_counts=True)
     ntracks = len(mcs_tracknumber)
+    print(f'Found MCS near AR: {ntracks}')
 
     # Write output to file
     write_netcdf(outfile, mcs_tracknumber, mcs_nhours)

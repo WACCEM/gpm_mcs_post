@@ -14,13 +14,15 @@ import dask
 from dask import delayed
 from dask.distributed import Client, LocalCluster
 
-def get_mcs_tc_tracknumber(mcsfile, lon, lat, dstc, tctime):
+def get_mcs_tc_tracknumber(mcsfile, dstc):
     """
     Find MCS track numbers that overlap with TC.
     """
 
     # Read MCS pixel-file
     dsmcs = xr.open_dataset(mcsfile, decode_times=False, mask_and_scale=False)
+    lon = dsmcs['lon']
+    lat = dsmcs['lat']
     # Get MCS cloud mask
     cloudtracknumber = dsmcs.cloudtracknumber.squeeze().data
     # Get MCS time string (yyyymmddhhmm)
@@ -28,6 +30,7 @@ def get_mcs_tc_tracknumber(mcsfile, lon, lat, dstc, tctime):
     # mcs_filename = os.path.basename(mcsfile)
     # mcstime = mcs_filename.split('_')[1] + mcs_filename.split('_')[2][0:4]
     mcstime = dsmcs['time'].data.item()
+    tctime = dstc['base_time'].data
 
     # Find the closest time between TC and MCS
     tidx = np.argmin(np.abs(tctime - mcstime))
@@ -107,6 +110,7 @@ if __name__ == '__main__':
     pixel_dir = config['pixelfile_dir']
     output_dir = config['output_dir']
     tc_file = config['tc_file']
+    run_parallel = config['run_parallel']
     n_workers = config['n_workers']
 
     # Output file
@@ -119,16 +123,16 @@ if __name__ == '__main__':
     pixelfiles = sorted(glob.glob(f'{pixel_dir}{indates}/mcstrack_{inyear}????_????.nc'))
     print(f'Number of pixel files: {len(pixelfiles)}')
 
-    # Get the region lat/lon boundary
-    ds = xr.open_dataset(pixelfiles[0])
-    ny = ds.dims['lat']; nx = ds.dims['lon']
-    lon = ds.lon; lat = ds.lat
-    lonmin, lonmax = lon.min().data, lon.max().data
-    latmin, latmax = lat.min().data, lat.max().data
+    # # Get the region lat/lon boundary
+    # ds = xr.open_dataset(pixelfiles[0])
+    # ny = ds.dims['lat']; nx = ds.dims['lon']
+    # lon = ds.lon; lat = ds.lat
+    # lonmin, lonmax = lon.min().data, lon.max().data
+    # latmin, latmax = lat.min().data, lat.max().data
+    # import pdb; pdb.set_trace()
 
     # Read TC data
     dstc = xr.open_dataset(tc_file, decode_times=False)
-    # Make a storm coordinate
     num_tc = dstc.sizes['storms']
     storms = dstc['storms'].data
     tctime = dstc['base_time'].data
@@ -139,9 +143,13 @@ if __name__ == '__main__':
     #                     (dstc.lat >= (latmin - buffer_zone)) & (dstc.lat <= (latmax + buffer_zone)) &
     #                     (dstc.year == int(inyear)), drop=True)
 
-    # Initialize dask
-    cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
-    client = Client(cluster)
+    if run_parallel == 1:
+        # Set Dask temporary directory for workers
+        dask_tmp_dir = '/tmp'
+        dask.config.set({'temporary-directory': dask_tmp_dir})
+        # Initialize dask
+        cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
+        client = Client(cluster)
 
     saved_tracknumber = []
     # Loop over each MCS pixel file
@@ -151,19 +159,22 @@ if __name__ == '__main__':
         print(os.path.basename(ifilename))
 
         # Call function to find MCS tracknumber within TCs
-        # tracknumber = get_mcs_tc_tracknumber(ifilename, lon, lat, dstc, tctime)
-        tracknumber = delayed(get_mcs_tc_tracknumber)(ifilename, lon, lat, dstc, tctime)
+        if run_parallel == 0:
+            tracknumber = get_mcs_tc_tracknumber(ifilename, dstc)
+        elif run_parallel == 1:
+            tracknumber = delayed(get_mcs_tc_tracknumber)(ifilename, dstc)
         
         # Append to the tracknumber list
         saved_tracknumber.append(tracknumber)
 
     # Collect results from Dask
-    results = dask.compute(*saved_tracknumber)
-    # print("Done processing {} files.".format(len(results))
-
-    # Flatten the append list
-    tracknumber_list = [item for sublist in results for item in sublist]
-    # tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
+    if run_parallel == 1:
+        results = dask.compute(*saved_tracknumber)
+        # print("Done processing {} files.".format(len(results))
+        # Flatten the append list
+        tracknumber_list = [item for sublist in results for item in sublist]
+    elif run_parallel == 0:
+        tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
 
     # Get unique track numbers, counts. Counts mean number of hours each MCS overlap with AR
     mcs_tracknumber, mcs_nhours = np.unique(tracknumber_list, return_counts=True)

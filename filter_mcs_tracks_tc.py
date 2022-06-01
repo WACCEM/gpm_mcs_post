@@ -27,24 +27,23 @@ outfile = f'{outdir}robust_mcs_tracks_extc_{date}.nc'
 # Read MCS stats file
 ds = xr.open_dataset(statsfile)
 
-# Read AR file
-dsar = xr.open_dataset(tcfile)
+# Read TC file
+dstc = xr.open_dataset(tcfile)
 
 # Subtrack tracknumber by 1 to get track indices
-ar_trackid = dsar.mcs_tracknumber - 1
-ar_nhours = dsar.mcs_nhours
+tc_trackid = dstc.mcs_tracknumber - 1
+tc_nhours = dstc.mcs_nhours
 
 # Get all MCS track indices
 alltracks = ds.tracks
 
-# Find track indices that are not in AR
-nonar_trackid = (alltracks[~np.isin(alltracks, ar_trackid)]).values
+# Find track indices that are not in TC
+nontc_trackid = (alltracks[~np.isin(alltracks, tc_trackid)]).values
 
-# Select tracks not in AR
-# dsout = ds.sel(tracks=nonar_trackid)
-dsout = ds.isel(tracks=nonar_trackid, drop=True)
+# Select tracks not in TC
+dsout = ds.isel(tracks=nontc_trackid, drop=True)
 # Update tracks coordinate
-nmcs = len(nonar_trackid)
+nmcs = len(nontc_trackid)
 tracks = np.arange(0, nmcs, 1)
 dsout['tracks'] = tracks
 

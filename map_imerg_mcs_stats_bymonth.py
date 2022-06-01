@@ -58,7 +58,7 @@ config = yaml.full_load(stream)
 # stats_file = config['stats_file']
 stats_dir = config['stats_dir']
 pixel_dir = config['pixelfile_dir']
-output_dir = config['output_dir']
+output_monthly_dir = config['output_monthly_dir']
 varname_speed = config['varname_speed']
 varname_mov_x = config['varname_mov_x']
 varname_mov_y = config['varname_mov_y']
@@ -75,8 +75,8 @@ stats.load()
 pixel_files = sorted(glob.glob(f'{pixel_dir}/{sdate}_{edate}/mcstrack_*nc'))
 print(f'Found {len(pixel_files)} mcstrack files')
 
-output_file = f'{output_dir}mcs_statsmap_{yearstr}{monthstr}.nc'
-os.makedirs(output_dir, exist_ok=True)
+output_file = f'{output_monthly_dir}mcs_statsmap_{yearstr}{monthstr}.nc'
+os.makedirs(output_monthly_dir, exist_ok=True)
 
 # Get map dimensions
 dspix = xr.open_dataset(pixel_files[0])
@@ -105,6 +105,7 @@ print('Number of MCS: ', nmcs)
 trackidx = np.array(trackidx.values).astype(int)
 
 # Subset variables to tracks in the current month
+start_split_cloudnumber = stats['start_split_cloudnumber'].sel(tracks=trackidx).load()
 base_time = stats['base_time'].sel(tracks=trackidx).load()
 # lifetime = (stats['length'].sel(tracks=trackidx) * stats.time_resolution_hour).load()
 lifetime = (stats['track_duration'].sel(tracks=trackidx) * stats.time_resolution_hour).load()
@@ -197,9 +198,8 @@ for imcs in range(nmcs):
 
     itrack = tracks.values[imcs] + 1
     ilifetime = lifetime.values[imcs]
-#     idxconvinit = lifecycle_index.values[imcs,0]
-#     idxgenesis = lifecycle_index.values[imcs,1]
     istartstatus = start_status.values[imcs]
+    istart_splitcloudnumber = start_split_cloudnumber[imcs]
     print(f'Track number: {itrack}')
     
     temp_track = np.zeros((ny, nx))*np.nan
@@ -209,8 +209,6 @@ for imcs in range(nmcs):
     # Loop over each time
     for it in range(ntimes):
         imcsstatus = mcs_status.values[imcs,it]
-#         ilifestage = lifecycle_stage.values[imcs,it]
-#         icn = cloudnumber.values[imcs,it]
         
         if np.isnan(base_times[imcs, it]):
             continue
@@ -318,7 +316,8 @@ for imcs in range(nmcs):
             #     temp_vspeed_nw[idx_p] = ivspeed
             
             # If MCS start status is not a split, check for initiation/genesis
-            if (istartstatus != 13):
+            # if (istartstatus != 13):
+            if (np.isnan(istart_splitcloudnumber)):
                 # If time step is == 0 (initiation)
                 if (it == 0):
                     map_init_ccs[idx_c] += 1
