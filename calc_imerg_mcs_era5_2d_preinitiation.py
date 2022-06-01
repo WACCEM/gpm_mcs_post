@@ -137,10 +137,16 @@ if __name__ == "__main__":
         prior_times[itrack,:] = np.array(pd.date_range(time0_1day, time0[itrack].values, freq='1H'))
     # Convert to Xarray DataArray
     coord_relativetimes = np.arange(-nhours+1, 1)
+    coord_relativetimes_attrs = {
+        'description': 'Relative times prior to MCS initiation',
+        'units': 'hour',
+    }
     coord_tracks = dsm['tracks']
-    prior_times = xr.DataArray(prior_times, 
-                                coords={'tracks':coord_tracks, 'hours':coord_relativetimes}, 
-                                dims=('tracks','hours'))
+    prior_times = xr.DataArray(
+        prior_times, 
+        coords={'tracks':coord_tracks, 'hours':coord_relativetimes}, 
+        dims=('tracks','hours'),
+    )
 
     # Convert all MCS times to date strings
     rmcs_dates = prior_times.dt.strftime('%Y%m')
@@ -189,6 +195,9 @@ if __name__ == "__main__":
 
     elif run_parallel == 1:
 
+        # Set Dask temporary directory for workers
+        dask_tmp_dir = config.get("dask_tmp_dir", "/tmp")
+        dask.config.set({'temporary-directory': dask_tmp_dir})
         # Initialize dask
         cluster = LocalCluster(n_workers=n_workers, threads_per_worker=threads_per_worker)
         client = Client(cluster)
@@ -248,8 +257,8 @@ if __name__ == "__main__":
         f'{varname}_min': (['tracks', 'rel_times'], VAR_min, VAR_attrs),
     }
     coordlist = {
-        'tracks': (['tracks'], dsm['tracks'], dsm['tracks'].attrs),
-        'rel_times': (['rel_times'], coord_relativetimes),
+        'tracks': (['tracks'], dsm['tracks'].data, dsm['tracks'].attrs),
+        'rel_times': (['rel_times'], coord_relativetimes, coord_relativetimes_attrs),
     }
     gattrlist = {
         'Title': 'MCS environments from ERA5',
@@ -262,9 +271,9 @@ if __name__ == "__main__":
 
     # Define xarray dataset
     dsout = xr.Dataset(varlist, coords=coordlist, attrs=gattrlist)
-    # Update attributes
-    dsout['rel_times'].attrs['description'] = 'Relative times prior to MCS initiation'
-    dsout['rel_times'].attrs['units'] = 'hour'
+    # # Update attributes
+    # dsout['rel_times'].attrs['description'] = 'Relative times prior to MCS initiation'
+    # dsout['rel_times'].attrs['units'] = 'hour'
 
     # Set encoding/compression for all variables
     comp = dict(zlib=True, dtype='float32')
