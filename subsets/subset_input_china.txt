@@ -1,0 +1,12 @@
+lonmin 90.
+lonmax 150.
+latmin 10.
+latmax 50.
+syear 2001.
+eyear 2020.
+smonth 5     
+emonth 9
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/china/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/china/stats/

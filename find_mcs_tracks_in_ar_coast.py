@@ -1,6 +1,10 @@
 """
-This script finds MCS track numbers that overlap with Atmospheric Rivers that hit the west coast of U.S. and Europe and save them to a netCDF file.
-The code needs to be modified to include west coast of U.S. as a secondary region for the new domain "nam".
+This script finds MCS track numbers that overlap with Atmospheric Rivers that hit the west coast of 
+Europe, North and South America and save them to a netCDF file.
+
+To run the code:
+Decide which region to run first by changing: lon_boxes, lat_boxes, outfile.
+Separating by Northern vs. Southern Hemsiphere reduces memory usage and speeds up the processing time.
 """
 __author__ = "Zhe.Feng@pnnl.gov"
 __date__ = "01-May-2020"
@@ -9,10 +13,11 @@ import numpy as np
 import glob, os, sys
 import xarray as xr
 import time, datetime, calendar, pytz
+import yaml
 import dask
 from dask import delayed
 from dask.distributed import Client, LocalCluster
-from scipy.ndimage import label, binary_dilation, generate_binary_structure
+from scipy.ndimage import binary_dilation, generate_binary_structure
 
 def make_timestring(filename):
     """
@@ -25,20 +30,24 @@ def make_timestring(filename):
     hour = (timestr[9:11])
     minute = (timestr[11:13])
     filetime = f'{year}-{month}-{day}T{hour}:{minute}'
-#     bt = calendar.timegm(datetime.datetime(year, month, day, hour, minute, second, tzinfo=utc).timetuple())
     return filename, filetime
 
-def get_mcs_ar_tracknumber(mcs_filename, ar_mask, landmask):
+def get_mcs_ar_tracknumber(mcs_filename, ar_mask, landmask, bounds):
+
+    # Get the domain subset bounds
+    min_y = bounds['min_y']
+    max_y = bounds['max_y']
+    min_x = bounds['min_x']
+    max_x = bounds['max_x']
+
     # Read MCS pixel file
-    dspx = xr.open_dataset(mcs_filename)
-    # cloudtracknumber = dspx.cloudtracknumber.astype(np.int32).squeeze()
-    cloudtracknumber = dspx.cloudtracknumber.squeeze().data
-    
+    dspx = xr.open_dataset(mcs_filename, mask_and_scale=False)
+    cloudtracknumber = dspx['cloudtracknumber'].squeeze().data[min_y:max_y, min_x:max_x]
+
     # Find MCS mask pixels that overlaps with AR mask
-    # overlap = cloudtracknumber[np.where(ar_mask == 1)]
-    overlap = cloudtracknumber[np.where((ar_mask == 1) & (landmask == 1))]
+    overlap = cloudtracknumber[((ar_mask == 1) & (landmask == 1))]
     # Get the unique MCS tracknumbers
-    mcs_tracknumber_ar = np.unique(overlap[~np.isnan(overlap)]).astype(np.int32)
+    mcs_tracknumber_ar = np.unique(overlap[(overlap > 0)])
     
     # Output as a list
     return mcs_tracknumber_ar.tolist()
@@ -74,40 +83,49 @@ def write_netcdf(outfile, mcs_tracknumber, mcs_nhours):
 
 if __name__ == '__main__':
 
-    region = sys.argv[1]
-    indates = sys.argv[2]
-    # region = 'npac'
-    # indates = '20150101_20151231'
+    indates = sys.argv[1]
+    config_file = sys.argv[2]
+    
     inyear = indates[0:4]
 
-    # Number of workers for Dask
-    n_workers = 10
+    # get inputs from configuration file
+    stream = open(config_file, 'r')
+    config = yaml.full_load(stream)
+    pixel_dir = config['pixelfile_dir']
+    output_dir = config['output_dir']
+    ar_dir = config['ar_dir']
+    landmask_file = config['landmask_file']
+    run_parallel = config['run_parallel']
+    n_workers = config['n_workers']
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # AR tracking file
+    arfile = f'{ar_dir}tag_MERRA2_hourlyIVT_{inyear}.nc'
+    # Output MCS tracknumbers file
+    # outfile = f'{output_dir}mcs_ar1_tracknumbers_{indates}.nc'
+    outfile = f'{output_dir}mcs_ar2_tracknumbers_{indates}.nc'
+
+    # Define regions to remove AR. 
+    # The Europe region is the same with Rutz et al. (2019) JGR Fig. 4.
+    # West cost of Europe and North America
+    # lon_boxes = [[-15,10], [-140,-115]]
+    # lat_boxes = [[35,62], [35,62]]
+    # West coast of South America (Patagonia)
+    lon_boxes = [[-76,-70]]
+    lat_boxes = [[-62,-30]]
 
     begin_time = datetime.datetime.now()
 
-    statsdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
-    pixeldir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/mcstracking_ccs4_4h/{indates}/'
-    ardir = os.path.expandvars('$SCRATCH') + '/waccem/AR_Tempest_hourly/'
-
-    outdir = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/{region}/stats_ccs4_4h/'
-    outfile = f'{outdir}mcs_ar_tracknumbers_{indates}.nc'
-
     # Find all pixel-level files
-    pixelfiles = sorted(glob.glob(f'{pixeldir}mcstrack_{inyear}????_????.nc'))
-    #arfile = f'{ardir}MERRA2.ar_tag.Tempest_v1.3hourly.{inyear}.nc'
-    arfile = f'{ardir}tag_MERRA2_hourlyIVT_{inyear}.nc'
+    pixelfiles = sorted(glob.glob(f'{pixel_dir}{indates}/mcstrack_{inyear}????_????.nc'))
     print(f'Number of pixel files: {len(pixelfiles)}')
 
-    # Define a region to remove AR for western Europe and North America. The Europe region is the same with Rutz et al. (2019) JGR Fig. 4.
-    lon_box_eu = [-15,10]
-    lon_box_nam = [-140,-115]
-    lat_box = [35,62]
-    landmaskfile = os.path.expandvars('$SCRATCH') + f'/waccem/mcs_region/map-data/IMERG_landmask_{region}.nc'
-
     # Get landmask
-    dslm = xr.open_dataset(landmaskfile)
+    dslm = xr.open_dataset(landmask_file)
     lonlm = dslm.lon
     latlm = dslm.lat
+    lon2d, lat2d = np.meshgrid(lonlm, latlm)
     # Define coast mask (land fraction between 20%-90%)
     coastmask = (dslm.landseamask < 90) & (dslm.landseamask > 20)
 
@@ -117,13 +135,15 @@ if __name__ == '__main__':
     coastmaskdilate = binary_dilation(coastmask.data, structure=dilationstructure, iterations=5).astype(coastmask.dtype)
 
     # Make a copy of the dilated coast mask
-    coastmask_west = np.copy(coastmaskdilate)
+    # coastmask_west = np.copy(coastmaskdilate)
+    coastmask_keep = np.zeros(coastmaskdilate.shape, dtype=np.int8)
 
-    # Retain only region over western Europe coastal region
-    x_idx = ((lonlm < lon_box_nam[0]) | ((lonlm > lon_box_nam[1]) & (lonlm < lon_box_eu[0])) | (lonlm > lon_box_eu[1]))
-    y_idx = (latlm < lat_box[0]) | (latlm > lat_box[1])
-    coastmask_west[y_idx,:] = 0
-    coastmask_west[:,x_idx] = 0
+    # Loop over each boxes, mark coastal regions
+    for ii in range(len(lon_boxes)):
+        mask = (lon2d >= min(lon_boxes[ii])) & (lon2d <= max(lon_boxes[ii])) & \
+               (lat2d >= min(lat_boxes[ii])) & (lat2d <= max(lat_boxes[ii])) & \
+               (coastmaskdilate == 1)
+        coastmask_keep[mask] = 1
 
     # Get the region lat/lon boundary
     ds = xr.open_dataset(pixelfiles[0])
@@ -133,8 +153,6 @@ if __name__ == '__main__':
     lat = ds.lat
     lonmin, lonmax = lon.min().data, lon.max().data
     latmin, latmax = lat.min().data, lat.max().data
-    # print(lonmin, lonmax, latmin, latmax)
-    # print(ds.dims)
 
     # Read AR data (1 file per year)
     dsar = xr.open_dataset(arfile)
@@ -150,14 +168,29 @@ if __name__ == '__main__':
         print("Error: AR subset domain size does not match MCS domain size!")
         sys.exit()
 
-
     # Set up a dictionary that keyed by filename, valued by filetime.
     # This way the pixelfile name can be used to get a time string to locate the corresponding AR time
     time_to_pixfilename = {key:value for key, value in map(make_timestring, pixelfiles)}
 
-    # Initialize dask
-    cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
-    client = Client(cluster)
+
+    # Find boundary of the coastal region
+    yid, xid = np.where(coastmask_keep == 1)
+    min_x, max_x = np.min(xid), np.max(xid)
+    min_y, max_y = np.min(yid), np.max(yid)
+    bounds = {'min_y':min_y, 'max_y':max_y, 'min_x':min_x, 'max_x':max_x}
+    # Subset the coastal region
+    coastmask_keep = coastmask_keep[min_y:max_y, min_x:max_x]
+
+    # import matplotlib.pyplot as plt
+    # import pdb; pdb.set_trace()
+
+    if run_parallel == 1:
+        # Set Dask temporary directory for workers
+        dask_tmp_dir = '/tmp'
+        dask.config.set({'temporary-directory': dask_tmp_dir})
+        # Initialize dask
+        cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1)
+        client = Client(cluster)
 
     saved_tracknumber = []
     # for ifile in range(0, 10):
@@ -168,29 +201,31 @@ if __name__ == '__main__':
         itime = time_to_pixfilename.get(ifilename)
         print(itime)
 
-        # Find the neartest AR data time
-        ar_mask = dsar.ar_binary_tag.sel(time=itime, method='nearest').data
+        # Find the neartest AR data time, and subset the domain
+        ar_mask = dsar.ar_binary_tag.sel(time=itime, method='nearest').data[min_y:max_y, min_x:max_x]
 
         # Call function to find MCS tracknumber within ARs
-        # tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_west)
-        tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_west)
+        if run_parallel == 0:
+            tracknumber = get_mcs_ar_tracknumber(ifilename, ar_mask, coastmask_keep, bounds)
+        elif run_parallel == 1:
+            tracknumber = delayed(get_mcs_ar_tracknumber)(ifilename, ar_mask, coastmask_keep, bounds)
         
-        # Extend the tracknumber list
+        # Append to the tracknumber list
         saved_tracknumber.append(tracknumber)
 
     # Collect results from Dask
-    results = dask.compute(*saved_tracknumber)
-    # print("Done processing {} files.".format(len(results))
-
-    # Flatten the append list
-    # tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
-    tracknumber_list = [item for sublist in results for item in sublist]
+    if run_parallel == 1:
+        results = dask.compute(*saved_tracknumber)
+        # print("Done processing {} files.".format(len(results))
+        # Flatten the append list
+        tracknumber_list = [item for sublist in results for item in sublist]
+    elif run_parallel == 0:
+        tracknumber_list = [item for sublist in saved_tracknumber for item in sublist]
 
     # Get unique track numbers, counts. Counts mean number of hours each MCS overlap with AR
     mcs_tracknumber, mcs_nhours = np.unique(tracknumber_list, return_counts=True)
     ntracks = len(mcs_tracknumber)
-
-    # import pdb; pdb.set_trace()
+    print(f'Found MCS near AR: {ntracks}')
 
     # Write output to file
     write_netcdf(outfile, mcs_tracknumber, mcs_nhours)

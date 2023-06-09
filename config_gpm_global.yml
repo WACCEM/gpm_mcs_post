@@ -1,0 +1,34 @@
+---
+stats_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/'
+pixelfile_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/'
+ar_dir: '/global/cscratch1/sd/feng045/waccem/AR_Tempest_hourly/'
+tc_file: '/global/cscratch1/sd/feng045/waccem/IBTrACS/ibtracs_2000_2020.nc'
+# mcsstats_filebase: 'mcs_tracks_final_'
+mcsstats_filebase: 'mcs_tracks_final_extc_'
+pixel_filebase: 'mcstrack_'
+landmask_file: '/global/cscratch1/sd/feng045/waccem/mcs_global/map_data/IMERG_landmask_180W-180E_60S-60N.nc'
+output_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/'
+output_monthly_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/monthly/'
+output_daily_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/daily/'
+output_climo_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/climo/'
+# Precipitation variable name
+pcpvarname: 'precipitation'
+# Movement variable names in MCS track stats
+# varname_speed: 'movement_r_meters_per_second'
+varname_speed: 'movement_speed'
+varname_mov_x: 'movement_distance_x'
+varname_mov_y: 'movement_distance_y'
+# Dask workers and threads
+run_parallel: 1
+n_workers: 32
+threads_per_worker: 1
+# Rain rate threshold to define a PF [mm/h]
+rr_min: 2.0
+# Pixel size [km]
+pixel_radius: 10.0  
+# Minimum PF area threshold [km^2]
+pf_min_area_thresh: 0
+# # Threshold of pixel-level land fraction to define a land pixel [%]
+# landfrac_thresh: 90
+# List of years to calculate climatology
+climo_years: [2001,2002,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020]

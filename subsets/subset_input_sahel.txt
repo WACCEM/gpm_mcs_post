@@ -1,0 +1,12 @@
+lonmin -25.
+lonmax 35.
+latmin -10.
+latmax 25.
+syear 2001
+eyear 2020
+smonth 1
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/sahel/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/sahel/stats/

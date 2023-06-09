@@ -10,12 +10,12 @@
 #SBATCH --output=log_%A_%a.log
 
 # To submit the job for a specific range of parts:
-# sbatch --array <indexlist>[%<limit>] slurm_subset_jobarray.sh
+# sbatch --array=<indexlist>[%<limit>] slurm_subset_jobarray.sh
 
 # For example, to submit all 20 jobs, but limit to running 2 at a time:
-# sbatch --array [0-19]%2 slurm_subset_jobarray.sh
+# sbatch --array=0-19%2 slurm_subset_jobarray.sh
 # For running a number of specific jobs:
-# sbatch --array [3,5,12,30-33]%6 slurm_subset_jobarray.sh
+# sbatch --array=3,5,12,30-33%6 slurm_subset_jobarray.sh
 
 date
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)

@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH -A m1867
+#SBATCH --job-name=REGIONYEAR
+#SBATCH --qos=debug
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=64
+#SBATCH --constraint=haswell
+#SBATCH --time=00:20:00
+#SBATCH --exclusive
+#SBATCH --verbose
+#SBATCH --mail-user=zhe.feng@pnnl.gov
+#SBATCH --mail-type=END
+#SBATCH --output=log_landfrac_REGION_YEAR.out
+date
+conda activate /global/common/software/m1867/python/py38
+codedir="/global/u1/f/feng045/program/gpm_mcs_post/"
+python ${codedir}add_pfstats_to_robust_mcs.py ${codedir}config_gpm_region.yml YEAR REGION
+date

@@ -1,0 +1,31 @@
+---
+# ERA5 3D hourly data directory
+era5_dir: '/global/cscratch1/sd/feng045/ERA5/e5.oper.an.pl/'
+# MCS track statistics directory
+stats_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/'
+# Output file directory
+output_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/era5_3d/'
+# Combinedd environmental file directory
+envs_dir: '/global/cscratch1/sd/feng045/waccem/mcs_global/global/era5_envs/'
+# MCS track statistics file basename
+mcsfile_basename: 'mcs_tracks_final_extc_'
+# Environment statistics file basename
+in_env_basename: 'mcs_era5_*'
+out_env_basename: 'mcs_full_envs_era5_'
+# Box size center at MCS
+# Number of grid point in lon/lat dimension [center-nx, center+nx], [center-ny, center+ny]
+nx: 12
+ny: 12
+# Vertical level limits to save in ERA5
+level_lims: [100., 1000.]
+# Number of hours prior to initiation to save
+nhours: 24
+# Set max number of times to keep for each MCS track
+# In V2 MCS database (2000-2020), MCS duration (times dimension)
+# > 200: 7 tracks; > 180: 10 tracks; > 160: 29 tracks;
+ntimes_max: 200
+# Dask workers and threads
+run_parallel: 1
+n_workers: 8
+threads_per_worker: 1
+dask_tmp_dir: '/tmp'

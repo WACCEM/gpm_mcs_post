@@ -1,0 +1,6 @@
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2015.tar.gz /global/cscratch1/sd/feng045/tmp//2015
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2016.tar.gz /global/cscratch1/sd/feng045/tmp//2016
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2017.tar.gz /global/cscratch1/sd/feng045/tmp//2017
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2018.tar.gz /global/cscratch1/sd/feng045/tmp//2018
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2019.tar.gz /global/cscratch1/sd/feng045/tmp//2019
+tar -cvzf /global/cscratch1/sd/feng045/tmp/mcs_subset/southamerica/mcstracking//2020.tar.gz /global/cscratch1/sd/feng045/tmp//2020

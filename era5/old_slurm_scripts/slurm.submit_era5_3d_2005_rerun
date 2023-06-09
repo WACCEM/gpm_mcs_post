@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --job-name=2005
+#SBATCH -A m1867
+#SBATCH --time=00:45:00
+#SBATCH -p regular
+#SBATCH -N 1
+#SBATCH -c 64
+#SBATCH -C haswell
+#SBATCH --exclusive
+#SBATCH --output=log_era5_3d_2005_%A_%a.log
+#SBATCH --mail-type=END
+#SBATCH --mail-user=zhe.feng@pnnl.gov
+#SBATCH --array=1-4
+
+date
+source activate /global/common/software/m1867/python/testflex
+cd /global/homes/f/feng045/program/gpm_mcs_post/script/
+
+# Takes a specified line ($SLURM_ARRAY_TASK_ID) from the task file
+LINE=$(sed -n "$SLURM_ARRAY_TASK_ID"p tasks_era5_3d_2005_rerun.txt)
+echo $LINE
+# Run the line as a command
+$LINE
+
+date

@@ -315,7 +315,8 @@ def main():
     period = '2001_2019'
     # period = '2014_2019'
 
-    rootdir = '/global/cscratch1/sd/feng045/waccem/mcs_region/'
+    # rootdir = '/global/cscratch1/sd/feng045/waccem/mcs_region/'
+    rootdir = '/global/project/projectdirs/m1867/zfeng/gpm/mcs_region/'
     dir_asia = f'{rootdir}asia/stats_ccs4_4h/climo/'
     # dir_asia = f'{rootdir}apac/stats_ccs4_4h/climo/'
     dir_nam = f'{rootdir}nam/stats_ccs4_4h/climo/'

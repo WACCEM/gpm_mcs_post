@@ -1,0 +1,12 @@
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 01 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 02 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 03 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 04 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 05 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 06 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 07 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 08 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 09 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 10 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 11 ~/program/gpm_mcs_post/config_gpm_global.yml
+run_mcs_monthly_precip.sh 20200101.0000 20210101.0000 2020 12 ~/program/gpm_mcs_post/config_gpm_global.yml

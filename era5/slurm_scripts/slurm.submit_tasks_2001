@@ -1,0 +1,24 @@
+#!/bin/bash
+#SBATCH --job-name=2D_2001
+#SBATCH -A m1867
+#SBATCH -p regular
+#SBATCH --time=00:10:00
+#SBATCH -p regular
+#SBATCH -N 1
+#SBATCH -c 64
+#SBATCH -C haswell
+#SBATCH --exclusive
+#SBATCH --output=log_era5_2001_%A_%a.log
+#SBATCH --mail-type=END
+#SBATCH --mail-user=zhe.feng@pnnl.gov
+#SBATCH --array=1-345
+
+date
+source activate /global/common/software/m1867/python/py38
+cd /global/homes/f/feng045/program/gpm_mcs_post/
+
+LINE=$(sed -n "$SLURM_ARRAY_TASK_ID"p slurm_tasks_2d_env_2001.txt) 
+echo $LINE
+$LINE
+
+date

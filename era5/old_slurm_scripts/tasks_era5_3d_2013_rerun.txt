@@ -1,0 +1,2 @@
+python extract_mcs_era5_3d_fullhistory_bytracks.py e5.oper.an.pl.128_131_u.ll025uv. U config_gpm_era5_3d_global.yml 20130101.0000_20140101.0000 5400 5499 5
+python extract_mcs_era5_3d_fullhistory_bytracks.py e5.oper.an.pl.128_132_v.ll025uv. V config_gpm_era5_3d_global.yml 20130101.0000_20140101.0000 18000 18099 5

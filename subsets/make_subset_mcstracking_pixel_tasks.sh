@@ -3,13 +3,13 @@
 # The region and period are read from an ASCII file "input.txt"
 # To run this script:
 # 1. Remove pre-existing temporary directories
-# >rm -fr $scratchdir/20??
+# rm -fr $scratchdir/20??
 # 2. Create task lists (also make output sub-directories)
-# >make_subset_mcstracking_pixel_taskfarm.sh input.txt
+# make_subset_mcstracking_pixel_tasks.sh input.txt
 # 3. Submit the slurm job using jobarray:
-# >sbatch --array=0-19%10 slurm_subset_jobarray_knl.sh
-# 4. SUbmit the slurm job to tar the subset data
-# >sbatch slurm_tarfiles_knl.sh
+# sbatch --array=0-19 slurm_subset_jobarray_knl.sh
+# 4. Submit the slurm job to tar the subset data
+# sbatch slurm_tarfiles_knl.sh
 
 # Read each line into var1, var2, ...
 # The variables must be in the exact order to work
@@ -49,6 +49,11 @@ for iyear in $(seq $syear $eyear); do
 
     echo $iyear ${taskname}
 
+    # Make start/end date for each year
+    iyear1=$((iyear+1))
+    sdate=${iyear}0101.0000
+    edate=${iyear1}0101.0000
+
     # Loop over month
     for imon in $(seq -f "%02g" $smonth $emonth); do
 
@@ -57,7 +62,8 @@ for iyear in $(seq $syear $eyear); do
         mkdir -p ${ioutdir}
 
         # Find all files in this month
-        infiles=$(ls -1 ${indir}/${iyear}0101_${iyear}1231/mcstrack_${iyear}${imon}*nc)
+        # infiles=$(ls -1 ${indir}/${iyear}0101_${iyear}1231/mcstrack_${iyear}${imon}*nc)
+        infiles=$(ls -1 ${indir}/${sdate}_${edate}/mcstrack_${iyear}${imon}*nc)
 
         # Check if there are files found
         if [[ ${infiles} ]]; then

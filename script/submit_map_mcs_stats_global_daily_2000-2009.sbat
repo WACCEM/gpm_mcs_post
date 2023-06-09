@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH -A m1867
+#SBATCH --job-name=map00-09
+#SBATCH --qos=regular
+##SBATCH --qos=debug
+#SBATCH --nodes=121
+#SBATCH --cpus-per-task=64
+#SBATCH --constraint=haswell
+#SBATCH --time=01:15:00
+#SBATCH --exclusive
+#SBATCH --verbose
+#SBATCH --mail-user=zhe.feng@pnnl.gov
+#SBATCH --mail-type=END
+#SBATCH --output=log_map_mcs_stats_daily_gpm_global_2000_2009.out
+date
+export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
+export THREADS=16
+runcommands.sh processlist_map_mcs_stats_daily_global_2000_2009
+date
