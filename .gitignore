@@ -3,7 +3,6 @@
 *.nc
 *.cdf
 *.out
-*slurm*
 *tfin*
 
 # Compiled source #

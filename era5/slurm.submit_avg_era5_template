@@ -1,0 +1,18 @@
+#!/bin/bash
+#SBATCH -A m1867
+#SBATCH -J ERA_YEAR
+#SBATCH -t 00:10:00
+#SBATCH -q regular
+#SBATCH -C cpu
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=128
+#SBATCH --exclusive
+#SBATCH --output=log_avg_era5_3d_YEAR.log
+#SBATCH --mail-type=END
+#SBATCH --mail-user=zhe.feng@pnnl.gov
+date
+module load taskfarmer
+export THREADS=128
+cd /global/homes/f/feng045/program/gpm_mcs_post/era5
+runcommands.sh tasks_avg_mcs_era5_YEAR
+date

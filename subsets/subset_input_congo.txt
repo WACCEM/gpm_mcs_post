@@ -1,0 +1,12 @@
+lonmin -20.
+lonmax 55.
+latmin -15.
+latmax 20.
+syear 2000
+eyear 2020
+smonth 1
+emonth 12
+indir /pscratch/sd/f/feng045/waccem/mcs_global/global/mcstracking/
+outdir /pscratch/sd/f/feng045/tmp/mcs_subset/congo/mcstracking/
+instats_dir /pscratch/sd/f/feng045/waccem/mcs_global/global/stats/
+outstats_dir /pscratch/sd/f/feng045/tmp/mcs_subset/congo/stats/

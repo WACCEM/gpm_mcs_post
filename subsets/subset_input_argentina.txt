@@ -1,0 +1,12 @@
+lonmin: -80.
+lonmax: -40.
+latmin: -45.
+latmax: -15.
+syear: 2001
+eyear: 2020
+smonth: 1
+emonth: 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/argentina/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/argentina/stats/

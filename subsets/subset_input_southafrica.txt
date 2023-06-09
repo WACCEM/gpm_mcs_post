@@ -1,0 +1,12 @@
+lonmin 0.
+lonmax 60.
+latmin -45.
+latmax 5.
+syear 2020
+eyear 2020
+smonth 1
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/south_africa/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/south_africa/stats/

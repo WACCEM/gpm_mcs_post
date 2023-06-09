@@ -1,0 +1,26 @@
+---
+# MCS pixel file directory
+pixel_dir: '/pscratch/sd/f/feng045/waccem/mcs_global/mcstracking/'
+# MCS track statistics directory
+stats_dir: '/pscratch/sd/f/feng045/waccem/mcs_global/stats/'
+# Output file directory
+output_dir: '/pscratch/sd/f/feng045/waccem/mcs_global/mcs_center_2d/parts/'
+combine_dir: '/pscratch/sd/f/feng045/waccem/mcs_global/mcs_center_2d/'
+# MCS track statistics file basename
+statsfile_basename: 'mcs_tracks_final_extc_'
+pixelfile_basename: 'mcstrack_'
+# Box size center at MCS
+# Number of grid point in lon/lat dimension [center-nx, center+nx], [center-ny, center+ny]
+nx: 30
+ny: 30
+# Number of hours prior to initiation to save
+nhours: 24
+# Set max number of times to keep for each MCS track
+# In V2 MCS database (2000-2020), MCS duration (times dimension)
+# > 200: 7 tracks; > 180: 10 tracks; > 160: 29 tracks;
+ntimes_max: 200
+# Dask workers and threads
+run_parallel: 1
+n_workers: 64
+threads_per_worker: 1
+dask_tmp_dir: '/tmp'

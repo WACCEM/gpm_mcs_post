@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -A m1867
 #SBATCH --job-name=mapgpmsaag
-#SBATCH --qos=debug
-#SBATCH --nodes=2
+#SBATCH --qos=regular
+#SBATCH --nodes=4
 #SBATCH --cpus-per-task=64
 #SBATCH --constraint=haswell
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 #SBATCH --exclusive
 #SBATCH --verbose
 #SBATCH --mail-user=zhe.feng@pnnl.gov

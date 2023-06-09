@@ -1,8 +1,28 @@
 ---
 # MCS track statistics file
-stats_dir: "/global/cscratch1/sd/feng045/SAAG/June2018_May2019_nsp/stats/robust/filtered/"
-# stats_file: "/global/cscratch1/sd/feng045/SAAG/June2018_May2019_nsp/stats/robust/filtered/robust_mcs_tracks_20180601_20190630.nc"
+stats_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/WRF/stats/"
 # Pixel file directory
-pixel_dir: "/global/cscratch1/sd/feng045/SAAG/June2018_May2019_nsp/mcstracking/"
+pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/WRF/mcstracking/"
 # Output file directory
-output_dir: "/global/cscratch1/sd/feng045/SAAG/June2018_May2019_nsp/stats/monthly/"
+output_monthly_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/WRF/stats/monthly/"
+pcpvarname: 'precipitation'
+# Movement variable names in MCS track stats
+# varname_speed: 'movement_r_meters_per_second'
+varname_speed: 'movement_speed'
+varname_mov_x: 'movement_distance_x'
+varname_mov_y: 'movement_distance_y'
+# Dask workers and threads
+run_parallel: 1
+n_workers: 32
+threads_per_worker: 1
+# Rain rate threshold to define a PF [mm/h]
+rr_min: 2.0
+# Pixel size [km]
+pixel_radius: 10.0  
+# Minimum PF area threshold [km^2]
+pf_min_area_thresh: 0
+# Hovmoller diagram lat/lon boundary
+startlat: -10.0
+endlat: 2.0
+startlon: 290.0
+endlon: 320.0

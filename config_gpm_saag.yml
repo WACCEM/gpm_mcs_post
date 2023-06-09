@@ -1,20 +1,27 @@
 ---
 # MCS track statistics file
-# stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/"
-# stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats_4pyflex/"
-stats_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/stats/"
-# stats_file: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/robust/filtered/robust_mcs_tracks_20180601_20190630.nc"
+stats_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/GPM/stats/"
 # Pixel file directory
-# pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking/"
-# pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/mcstracking_4pyflex/"
-pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/mcstracking/"
+pixelfile_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/GPM/mcstracking/"
 # Output file directory
-# output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats/monthly/"
-# output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/stats_4pyflex/monthly/"
-output_dir: "/global/cscratch1/sd/feng045/SAAG/GPM/pyflex_test2/stats/monthly/"
+output_monthly_dir: "/global/cscratch1/sd/feng045/SAAG/mcs_tracking/3year_test_simulation/GPM/stats/monthly/"
 pcpvarname: 'precipitation'
 # Movement variable names in MCS track stats
-# varname_speed: 'movement_r_meters_per_second'
 varname_speed: 'movement_speed'
 varname_mov_x: 'movement_distance_x'
 varname_mov_y: 'movement_distance_y'
+# Dask workers and threads
+run_parallel: 1
+n_workers: 32
+threads_per_worker: 1
+# Rain rate threshold to define a PF [mm/h]
+rr_min: 2.0
+# Pixel size [km]
+pixel_radius: 10.0  
+# Minimum PF area threshold [km^2]
+pf_min_area_thresh: 0
+# Hovmoller diagram lat/lon boundary
+startlat: -10.0
+endlat: 2.0
+startlon: -70.0
+endlon: -40.0

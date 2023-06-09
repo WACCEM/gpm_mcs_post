@@ -1,0 +1,12 @@
+lonmin -118.
+lonmax -102.
+latmin 25.
+latmax 40.
+syear 2015
+eyear 2020
+smonth 1
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/arizona_subset/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/arizona_subset/

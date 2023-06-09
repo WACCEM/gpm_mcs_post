@@ -1,0 +1,7 @@
+---
+# ERA5 data directory
+in_dir3d: '/pscratch/sd/f/feng045/waccem/mcs_global/era5_3d/'
+in_dir2d: '/pscratch/sd/f/feng045/waccem/mcs_global/era5_2d/'
+in_dir2d_derived: '/pscratch/sd/f/feng045/waccem/mcs_global/era5_2d_derived/'
+# Output file directory
+output_dir: '/pscratch/sd/f/feng045/waccem/mcs_global/era5_envs/'

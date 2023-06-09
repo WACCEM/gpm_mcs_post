@@ -1,0 +1,12 @@
+lonmin -82.
+lonmax -34.
+latmin -56.
+latmax 13.
+syear 2016
+eyear 2016
+smonth 12
+emonth 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/saag/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/saag/stats/

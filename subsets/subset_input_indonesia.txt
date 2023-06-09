@@ -1,0 +1,12 @@
+lonmin: 93.
+lonmax: 120.
+latmin: -12.
+latmax: 15.
+syear: 2001
+eyear: 2020
+smonth: 1
+emonth: 12
+indir /global/cscratch1/sd/feng045/waccem/mcs_global/global/mcstracking/
+outdir /global/cscratch1/sd/feng045/tmp/mcs_subset/indonesia/mcstracking/
+instats_dir /global/cscratch1/sd/feng045/waccem/mcs_global/global/stats/
+outstats_dir /global/cscratch1/sd/feng045/tmp/mcs_subset/indonesia/stats/
