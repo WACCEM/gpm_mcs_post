@@ -8,14 +8,18 @@ import calendar, datetime, pytz, time
 
 if __name__ == '__main__':
         
-    # Input IBTrACS CSV file
+    # Input IBTrACS CSV file (Global)
     # https://doi.org/10.25921/82ty-9e16
-    filename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs.since1980.list.v04r00.csv'
+    # filename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs.since1980.list.v04r00.csv'
+    # IBTrACS CSV file (North Atlantic)
+    filename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs.NA.list.v04r00.csv'
     
-    start_year = 2000
-    end_year = 2020
+    start_year = 2004
+    end_year = 2022
 
-    outfilename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs_{start_year}_{end_year}.nc'
+    # Output file name
+    # outfilename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs_{start_year}_{end_year}.nc'
+    outfilename = f'/global/cfs/cdirs/m1867/zfeng/gpm/IBTrACS/ibtracs_NA_{start_year}_{end_year}.nc'
 
     # Only read several columns
     usecols=['SEASON','SID','LON','LAT','ISO_TIME','IFLAG','WMO_AGENCY','USA_ROCI','TOKYO_R30_LONG',\

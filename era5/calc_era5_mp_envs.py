@@ -8,6 +8,7 @@ __date__ = "01-25-2024"
 import numpy as np
 import xarray as xr
 import pandas as pd
+from pandas.tseries.offsets import MonthEnd
 import sys, os
 import copy
 import time
@@ -15,6 +16,8 @@ import yaml
 import warnings
 import diag_functions as afwa
 from joblib import Parallel, delayed
+from itertools import repeat
+from multiprocessing import Pool
 
 def calc_era5_prof(
         filenameZ, 
@@ -375,7 +378,7 @@ if __name__ == "__main__":
     nfiles = len(tracks_alldates)
 
     # TODO: setting nfiles to a smaller number for testing
-    nfiles = 2
+    # nfiles = 2
     print(f"Total number of ERA5 files: {nfiles}")
 
 
@@ -392,11 +395,15 @@ if __name__ == "__main__":
     p_idx_track = []
     p_track_time = []
     p_level_lims = []
+    p_allinputs = []
 
     # Loop over dates that have MCSs in them
     for ifile in range(nfiles):
         idir = dirs_month[ifile]
         iday = files3d_day[ifile]
+        # Get last day of the month
+        itimestamp = tracks_alldates[ifile]
+        ieday = (itimestamp + MonthEnd(1)).strftime("%Y%m%d")
         print(iday)
                 
         # 3d era5 var files for the day: 
@@ -430,38 +437,45 @@ if __name__ == "__main__":
         p_track_time.append(track_time)
         p_level_lims.append(level_lims)
 
-        # if mcs present at era5 time 
-        if tracks_present > 0:
-            # Serial
-            if run_parallel == 0:
-                # Call function to calculate statistics
-                result = calc_era5_prof(
-                    p_filenameZ[ifile], 
-                    p_filenameT[ifile], 
-                    p_filenameRH[ifile], 
-                    p_filenameU[ifile], 
-                    p_filenameV[ifile], 
-                    p_idx_track[ifile], 
-                    p_track_time[ifile], 
-                    p_level_lims[ifile],
-                )
-                results.append(result)          
+        p_allinputs.append((filenameZ, filenameT, filenameRH, filenameU, filenameV, idx_track, track_time, level_lims))
+        # if ifile == 3:
+        #     import pdb; pdb.set_trace()
+
+        # # if mcs present at era5 time 
+        # if tracks_present > 0:
+        #     # Serial
+        #     if run_parallel == 0:
+        #         # Call function to calculate statistics
+        #         result = calc_era5_prof(
+        #             p_filenameZ[ifile], 
+        #             p_filenameT[ifile], 
+        #             p_filenameRH[ifile], 
+        #             p_filenameU[ifile], 
+        #             p_filenameV[ifile], 
+        #             p_idx_track[ifile], 
+        #             p_track_time[ifile], 
+        #             p_level_lims[ifile],
+        #         )
+        #         results.append(result)          
     # end for ifile in range(nfiles):
 
     # Parallel
     if run_parallel == 1:
-        results = Parallel(n_jobs=n_workers)(
-            delayed(calc_era5_prof)(
-                p_filenameZ[ifile], 
-                p_filenameT[ifile], 
-                p_filenameRH[ifile], 
-                p_filenameU[ifile], 
-                p_filenameV[ifile], 
-                p_idx_track[ifile], 
-                p_track_time[ifile], 
-                p_level_lims[ifile],
-            ) for ifile in range(0, nfiles)
-        )
+        pool = Pool(n_workers)
+        results = pool.starmap(calc_era5_prof, p_allinputs)
+        pool.close()
+        # results = Parallel(n_jobs=n_workers)(
+        #     delayed(calc_era5_prof)(
+        #         p_filenameZ[ifile], 
+        #         p_filenameT[ifile], 
+        #         p_filenameRH[ifile], 
+        #         p_filenameU[ifile], 
+        #         p_filenameV[ifile], 
+        #         p_idx_track[ifile], 
+        #         p_track_time[ifile], 
+        #         p_level_lims[ifile],
+        #     ) for ifile in range(0, nfiles)
+        # )
     # Final returned outputs
     final_result = results
 

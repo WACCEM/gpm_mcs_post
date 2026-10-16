@@ -5,8 +5,7 @@
 # To run this script:
 # >run_subset_robust_mcs_tracks.sh input.txt
 
-# conda activate /global/common/software/m1867/python/py38
-source activate /global/common/software/m1867/python/flextrkr
+source activate /global/common/software/m1867/python/pyflex
 
 # Read each line into var1, var2, ...
 # The variables must be in the exact order to work

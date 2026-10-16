@@ -4,6 +4,9 @@
 #module load nco
 #module load nco/4.7.9-intel
 
+# Load E3SM unified environment (contains NCO)
+source /global/common/software/e3sm/anaconda_envs/load_latest_e3sm_unified_pm-cpu.sh
+
 filename=${1##*/}
 outfile="$2"/${filename}
 

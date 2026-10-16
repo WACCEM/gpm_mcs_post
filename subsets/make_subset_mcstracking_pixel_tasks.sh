@@ -27,7 +27,7 @@ indir=$var9
 outdir=$var10
 
 # Scratch directory to store the temporary subset files
-scratchdir="/global/cscratch1/sd/feng045/tmp/"
+scratchdir="/pscratch/sd/f/feng045/tmp/"
 exedir=$PWD
 
 # Create a tar script file
