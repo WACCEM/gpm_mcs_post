@@ -2,7 +2,7 @@
 
 Scripts used to remove MCS tracks that overlap tropical cyclones (TCs) from the V3 global MCS tracking dataset (the `extc` files). They were written and modified by Sihan Zhang for the V3 dataset.
 
-They supersede the scripts of the same names in the top-level folder of this repository. The top-level versions use only the single TC record nearest in time at each hour and convert ROCI with a statute-mile factor; they are kept unchanged for the earlier regional datasets.
+They supersede the scripts of the same names in the top-level folder of this repository, which are not used for V3. The top-level versions use only the single TC record nearest in time at each hour and convert ROCI with a statute-mile factor; they are kept for the earlier regional datasets (the top-level `preprocess_tc_ibtracs.py` currently reads the North Atlantic IBTrACS file).
 
 ## Workflow
 
